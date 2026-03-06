@@ -28,8 +28,12 @@ app.get('/health', (req, res) => {
 
 // Check battles every minute
 setInterval(async () => {
-  await activateUpcomingBattles()
-  await checkAndFinishExpiredBattles()
+  try {
+    await activateUpcomingBattles()
+    await checkAndFinishExpiredBattles()
+  } catch (err) {
+    console.error('Scheduler error:', err)
+  }
 }, 60 * 1000)
 
 app.listen(PORT, () => {
