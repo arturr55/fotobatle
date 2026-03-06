@@ -1,0 +1,8 @@
+{
+  "name": "fotobatle",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd backend && npm install && npm run db:generate && npm run build",
+    "start": "cd backend && npx prisma migrate deploy && node dist/index.js"
+  }
+}
