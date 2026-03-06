@@ -92,9 +92,21 @@ bot.on('message', async (ctx) => {
   }
 })
 
-bot.launch({ dropPendingUpdates: true })
+const WEBHOOK_URL = process.env.WEBHOOK_URL
+const PORT = parseInt(process.env.PORT || '3000')
 
-console.log('Bot started!')
+if (WEBHOOK_URL) {
+  bot.launch({
+    webhook: {
+      domain: WEBHOOK_URL,
+      port: PORT,
+    },
+  })
+  console.log(`Bot started (webhook: ${WEBHOOK_URL})`)
+} else {
+  bot.launch({ dropPendingUpdates: true })
+  console.log('Bot started (polling)')
+}
 
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
