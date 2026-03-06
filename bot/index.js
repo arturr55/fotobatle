@@ -92,7 +92,7 @@ bot.on('message', async (ctx) => {
   }
 })
 
-bot.launch()
+bot.launch({ dropPendingUpdates: true })
 
 console.log('Bot started!')
 
