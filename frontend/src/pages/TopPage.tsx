@@ -136,49 +136,56 @@ export default function TopPage() {
 
   return (
     <div className="flex flex-col pb-24">
-      <div className="px-4 pt-6 pb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Trophy size={20} className="text-yellow-400" fill="currentColor" />
-          <h1 className="text-xl font-bold text-white">Рейтинг</h1>
+      {/* Hero */}
+      <div className="relative mx-4 mt-4 mb-4 rounded-3xl overflow-hidden px-5 py-5"
+        style={{ background: 'linear-gradient(135deg, #1a1200 0%, #2a1f00 40%, #1a1200 100%)', border: '1px solid rgba(234,179,8,0.15)' }}>
+        <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-20 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #eab308, transparent)', transform: 'translate(30%, -30%)' }} />
+        <div className="relative flex items-center gap-3">
+          <Trophy size={32} className="text-yellow-400" fill="currentColor" />
+          <div>
+            <h1 className="text-xl font-extrabold text-white">Рейтинг</h1>
+            <p className="text-yellow-400/60 text-xs">Лучшие фото батлов</p>
+          </div>
         </div>
+      </div>
 
-        <div className="flex gap-2 mb-4">
+      <div className="px-4 pb-4">
+        <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
           <button
             onClick={() => setTab('live')}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${tab === 'live' ? 'bg-yellow-500 text-black' : 'text-white/60'}`}
-            style={{ background: tab === 'live' ? undefined : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${tab === 'live' ? 'text-white' : 'text-white/40'}`}
+            style={{ background: tab === 'live' ? 'linear-gradient(135deg, #ec4899, #8b5cf6)' : 'none', border: 'none', cursor: 'pointer' }}
           >
             Активные
           </button>
           <button
             onClick={() => setTab('winners')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${tab === 'winners' ? 'bg-yellow-500 text-black' : 'text-white/60'}`}
-            style={{ background: tab === 'winners' ? undefined : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === 'winners' ? 'text-black' : 'text-white/40'}`}
+            style={{ background: tab === 'winners' ? '#eab308' : 'none', border: 'none', cursor: 'pointer' }}
           >
             <Medal size={13} />
             Победители
           </button>
         </div>
-
-        {tab === 'live' && allBattles.length > 1 && (
-          <div className="flex gap-4 overflow-x-auto pb-1 -mx-1 px-1">
-            {allBattles.map(b => (
-              <button
-                key={b.id}
-                onClick={() => setSelectedId(b.id)}
-                className={`flex-shrink-0 text-sm font-medium transition-all pb-1 ${
-                  current?.id === b.id
-                    ? 'text-white border-b-2 border-pink-500'
-                    : 'text-white/40 border-b-2 border-transparent'
-                }`}
-                style={{ background: 'none', border: 'none', borderBottom: current?.id === b.id ? '2px solid #ec4899' : '2px solid transparent', cursor: 'pointer' }}
-              >
-                {b.title}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
+
+      {tab === 'live' && allBattles.length > 1 && (
+        <div className="flex gap-4 overflow-x-auto pb-3 px-4">
+          {allBattles.map(b => (
+            <button
+              key={b.id}
+              onClick={() => setSelectedId(b.id)}
+              className={`flex-shrink-0 text-sm font-medium transition-all pb-1 ${
+                current?.id === b.id ? 'text-white' : 'text-white/40'
+              }`}
+              style={{ background: 'none', border: 'none', borderBottom: current?.id === b.id ? '2px solid #ec4899' : '2px solid transparent', cursor: 'pointer' }}
+            >
+              {b.title}
+            </button>
+          ))}
+        </div>
+      )}
 
       {tab === 'live' ? (
         current ? (
