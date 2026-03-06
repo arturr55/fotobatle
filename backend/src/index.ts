@@ -15,7 +15,7 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
   credentials: true,
 }))
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 app.use('/uploads', express.static(path.join(process.cwd(), process.env.UPLOAD_DIR || 'uploads')))
 
 app.use('/api/users', usersRouter)
