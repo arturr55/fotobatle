@@ -189,6 +189,49 @@ router.post('/:id/enter', upload.single('photo'), async (req: AuthRequest, res: 
   res.json({ success: true })
 })
 
+// Leave battle (refund if no votes on entry)
+router.delete('/:id/entry', async (req: AuthRequest, res: Response) => {
+  const battleId = parseInt(req.params.id as string)
+
+  const entry = await prisma.battleEntry.findUnique({
+    where: { battleId_userId: { battleId, userId: req.user!.id } },
+    include: { _count: { select: { votes: true } } }
+  })
+
+  if (!entry) return res.status(404).json({ error: 'You are not in this battle' })
+
+  const battle = await prisma.battle.findUnique({ where: { id: battleId } })
+  if (!battle) return res.status(404).json({ error: 'Battle not found' })
+  if (battle.status !== 'ACTIVE') return res.status(400).json({ error: 'Cannot leave a battle that is not active' })
+
+  if (entry._count.votes > 0) {
+    return res.status(400).json({ error: 'Cannot leave after receiving votes' })
+  }
+
+  await prisma.$transaction([
+    prisma.battleEntry.delete({ where: { id: entry.id } }),
+    prisma.battle.update({
+      where: { id: battleId },
+      data: { prizePool: { decrement: battle.entryFee } }
+    }),
+    prisma.user.update({
+      where: { id: req.user!.id },
+      data: { balance: { increment: battle.entryFee } }
+    }),
+    prisma.transaction.create({
+      data: {
+        userId: req.user!.id,
+        type: 'REFUND',
+        amount: battle.entryFee,
+        description: `Выход из батла "${battle.title}"`,
+        metadata: { battleId }
+      }
+    })
+  ])
+
+  res.json({ success: true })
+})
+
 // Admin: create battle
 router.post('/', adminOnly, async (req: AuthRequest, res: Response) => {
   const { title, description, category, entryFee, startsAt, endsAt } = req.body

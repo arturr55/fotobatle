@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react'
 import { useBattle, useEnterBattle } from '../hooks/useBattles'
 import { useUser } from '../hooks/useUser'
-import { ArrowLeft, Star, Users, Camera } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Star, Users, Camera, LogOut, Clock } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
+import api from '../api/client'
 
 interface Props {
   battleId: number
@@ -13,9 +15,20 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
   const { data: battle } = useBattle(battleId)
   const { data: user } = useUser()
   const enterBattle = useEnterBattle()
+  const queryClient = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  const leaveBattle = useMutation({
+    mutationFn: () => api.delete(`/battles/${battleId}/entry`).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['battle', battleId] })
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      WebApp.showAlert('Ты вышел из батла. Взнос возвращён.')
+    },
+    onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
+  })
 
   if (!battle) {
     return (
@@ -95,14 +108,44 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
 
       {/* My entry */}
       {myEntry && (
-        <div className="mx-4 mb-4 rounded-2xl p-3 flex items-center gap-3"
+        <div className="mx-4 mb-4 rounded-2xl p-3"
           style={{ background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)' }}>
-          <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-            <img src={myEntry.photoUrl} alt="" className="w-full h-full object-cover" />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+              <img src={myEntry.photoUrl} alt="" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1">
+              <p className="text-pink-400 font-semibold text-sm">Ты участвуешь!</p>
+              <p className="text-white/60 text-xs">{myEntry.score} очков · {myEntry.rank ? `#${myEntry.rank}` : 'без ранга'}</p>
+            </div>
+            {battle.status === 'ACTIVE' && (
+              <button
+                onClick={() => WebApp.showConfirm(
+                  'Выйти из батла? Взнос вернётся только если на твоё фото ещё нет голосов.',
+                  (ok) => { if (ok) leaveBattle.mutate() }
+                )}
+                disabled={leaveBattle.isPending}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-white/50 disabled:opacity-40"
+                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}
+              >
+                <LogOut size={13} />
+                Выйти
+              </button>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* Upcoming message */}
+      {battle.status === 'UPCOMING' && (
+        <div className="mx-4 mb-4 rounded-2xl p-4 flex items-center gap-3"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <Clock size={20} className="text-yellow-400 flex-shrink-0" />
           <div>
-            <p className="text-pink-400 font-semibold text-sm">Ты участвуешь!</p>
-            <p className="text-white/60 text-xs">{myEntry.score} очков · {myEntry.rank ? `#${myEntry.rank}` : 'без ранга'}</p>
+            <p className="text-white font-semibold text-sm">Батл ещё не начался</p>
+            <p className="text-white/50 text-xs">
+              Старт: {new Date(battle.startsAt).toLocaleDateString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+            </p>
           </div>
         </div>
       )}
