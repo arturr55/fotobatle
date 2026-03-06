@@ -22,7 +22,7 @@ router.get('/me', async (req: AuthRequest, res: Response) => {
       createdAt: true,
     }
   })
-  res.json(user)
+  res.json({ ...user, isAdmin: req.user!.isAdmin })
 })
 
 router.get('/me/transactions', async (req: AuthRequest, res: Response) => {

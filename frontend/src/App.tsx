@@ -6,30 +6,25 @@ import VotePage from './pages/VotePage'
 import TopPage from './pages/TopPage'
 import ProfilePage from './pages/ProfilePage'
 import BattleDetailPage from './pages/BattleDetailPage'
+import AdminPage from './pages/AdminPage'
+import { useUser } from './hooks/useUser'
 
-type Tab = 'battles' | 'vote' | 'top' | 'profile'
+type Tab = 'battles' | 'vote' | 'top' | 'profile' | 'admin'
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('battles')
   const [selectedBattleId, setSelectedBattleId] = useState<number | null>(null)
+  const { data: user } = useUser()
 
   useEffect(() => {
     WebApp.ready()
     WebApp.expand()
   }, [])
 
-  const handleSelectBattle = (id: number) => {
-    setSelectedBattleId(id)
-  }
-
-  const handleBack = () => {
-    setSelectedBattleId(null)
-  }
-
   if (selectedBattleId) {
     return (
       <div style={{ minHeight: '100vh', background: '#0f0f0f' }}>
-        <BattleDetailPage battleId={selectedBattleId} onBack={handleBack} />
+        <BattleDetailPage battleId={selectedBattleId} onBack={() => setSelectedBattleId(null)} />
       </div>
     )
   }
@@ -37,12 +32,13 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', background: '#0f0f0f' }}>
       <div className="pb-20">
-        {tab === 'battles' && <BattlesPage onSelectBattle={handleSelectBattle} />}
+        {tab === 'battles' && <BattlesPage onSelectBattle={setSelectedBattleId} />}
         {tab === 'vote' && <VotePage />}
         {tab === 'top' && <TopPage />}
         {tab === 'profile' && <ProfilePage />}
+        {tab === 'admin' && <AdminPage />}
       </div>
-      <BottomNav active={tab} onChange={setTab} />
+      <BottomNav active={tab} onChange={setTab} isAdmin={!!(user as any)?.isAdmin} />
     </div>
   )
 }
