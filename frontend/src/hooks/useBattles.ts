@@ -10,6 +10,13 @@ export function useBattles() {
   })
 }
 
+export function useFinishedBattles() {
+  return useQuery<Battle[]>({
+    queryKey: ['battles-finished'],
+    queryFn: () => api.get('/battles/finished').then(r => r.data),
+  })
+}
+
 export function useBattle(id: number) {
   return useQuery<Battle>({
     queryKey: ['battle', id],
@@ -37,14 +44,30 @@ export function useVote(battleId: number) {
   })
 }
 
+function compressImage(file: File, maxWidth = 800, quality = 0.82): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const ratio = Math.min(1, maxWidth / img.width)
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width * ratio
+      canvas.height = img.height * ratio
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.src = url
+  })
+}
+
 export function useEnterBattle() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ battleId, photo }: { battleId: number; photo: File }) => {
-      const form = new FormData()
-      form.append('photo', photo)
-      return api.post(`/battles/${battleId}/enter`, form).then(r => r.data)
+    mutationFn: async ({ battleId, photo }: { battleId: number; photo: File }) => {
+      const photoData = await compressImage(photo)
+      return api.post(`/battles/${battleId}/enter`, { photo: photoData }).then(r => r.data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battles'] })

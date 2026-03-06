@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
 export default api
 
 export function mediaUrl(url: string): string {
-  if (!url || url.startsWith('http')) return url
+  if (!url || url.startsWith('http') || url.startsWith('data:')) return url
   const base = import.meta.env.VITE_API_URL || ''
   return `${base}${url}`
 }

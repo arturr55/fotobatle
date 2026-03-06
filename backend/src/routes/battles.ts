@@ -1,33 +1,9 @@
 import { Router, Response } from 'express'
-import multer from 'multer'
-import path from 'path'
-import fs from 'fs'
 import { authMiddleware, adminOnly, AuthRequest } from '../middleware/auth'
 import prisma from '../db'
 import { finishBattle } from '../services/battleService'
 
 const router = Router()
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = process.env.UPLOAD_DIR || './uploads'
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true })
-    cb(null, uploadDir)
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname)
-    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`)
-  }
-})
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) cb(null, true)
-    else cb(new Error('Only images allowed'))
-  }
-})
 
 router.use(authMiddleware)
 
@@ -39,6 +15,25 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       _count: { select: { entries: true } }
     },
     orderBy: { startsAt: 'asc' }
+  })
+  res.json(battles)
+})
+
+// Get finished battles with top-3 winners
+router.get('/finished', async (req: AuthRequest, res: Response) => {
+  const battles = await prisma.battle.findMany({
+    where: { status: 'FINISHED' },
+    orderBy: { endsAt: 'desc' },
+    take: 20,
+    include: {
+      entries: {
+        where: { rank: { in: [1, 2, 3] } },
+        orderBy: { rank: 'asc' },
+        include: {
+          user: { select: { id: true, username: true, firstName: true, avatarUrl: true } }
+        }
+      }
+    }
   })
   res.json(battles)
 })
@@ -141,8 +136,8 @@ router.post('/entries/:entryId/vote', async (req: AuthRequest, res: Response) =>
   res.json({ success: true, points })
 })
 
-// Enter battle (upload photo)
-router.post('/:id/enter', upload.single('photo'), async (req: AuthRequest, res: Response) => {
+// Enter battle (upload photo as base64)
+router.post('/:id/enter', async (req: AuthRequest, res: Response) => {
   const battleId = parseInt(req.params.id as string)
 
   const battle = await prisma.battle.findUnique({ where: { id: battleId } })
@@ -159,9 +154,11 @@ router.post('/:id/enter', upload.single('photo'), async (req: AuthRequest, res: 
     return res.status(400).json({ error: 'Insufficient balance' })
   }
 
-  if (!req.file) return res.status(400).json({ error: 'Photo required' })
+  const { photo } = req.body
+  if (!photo || !photo.startsWith('data:image')) return res.status(400).json({ error: 'Photo required' })
+  if (photo.length > 4 * 1024 * 1024) return res.status(400).json({ error: 'Photo too large (max 3MB)' })
 
-  const photoUrl = `/uploads/${req.file.filename}`
+  const photoUrl = photo
 
   await prisma.$transaction([
     prisma.user.update({

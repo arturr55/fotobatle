@@ -60,12 +60,14 @@ export async function finishBattle(battleId: number) {
     ])
   }
 
-  // Set rank for remaining entries
+  // Set rank for remaining entries, then delete their rows (free base64 photo data)
+  const loserIds: number[] = []
   for (let i = 3; i < battle.entries.length; i++) {
-    await prisma.battleEntry.update({
-      where: { id: battle.entries[i].id },
-      data: { rank: i + 1 }
-    })
+    loserIds.push(battle.entries[i].id)
+  }
+
+  if (loserIds.length > 0) {
+    await prisma.battleEntry.deleteMany({ where: { id: { in: loserIds } } })
   }
 }
 
