@@ -147,7 +147,7 @@ router.post('/:id/enter', upload.single('photo'), async (req: AuthRequest, res: 
 
   const battle = await prisma.battle.findUnique({ where: { id: battleId } })
   if (!battle) return res.status(404).json({ error: 'Battle not found' })
-  if (battle.status !== 'ACTIVE') return res.status(400).json({ error: 'Battle not active' })
+  if (battle.status !== 'UPCOMING') return res.status(400).json({ error: 'Registration is closed' })
 
   const existing = await prisma.battleEntry.findUnique({
     where: { battleId_userId: { battleId, userId: req.user!.id } }
@@ -202,7 +202,7 @@ router.delete('/:id/entry', async (req: AuthRequest, res: Response) => {
 
   const battle = await prisma.battle.findUnique({ where: { id: battleId } })
   if (!battle) return res.status(404).json({ error: 'Battle not found' })
-  if (battle.status !== 'ACTIVE') return res.status(400).json({ error: 'Cannot leave a battle that is not active' })
+  if (battle.status === 'FINISHED') return res.status(400).json({ error: 'Battle already finished' })
 
   if (entry._count.votes > 0) {
     return res.status(400).json({ error: 'Cannot leave after receiving votes' })

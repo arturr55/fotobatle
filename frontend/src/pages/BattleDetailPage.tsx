@@ -39,7 +39,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
   }
 
   const myEntry = battle.entries?.find(e => e.userId === user?.id)
-  const canEnter = !myEntry && battle.status === 'ACTIVE'
+  const canEnter = !myEntry && battle.status === 'UPCOMING'
   const hasBalance = (user?.balance || 0) >= battle.entryFee
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,7 +118,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
               <p className="text-pink-400 font-semibold text-sm">Ты участвуешь!</p>
               <p className="text-white/60 text-xs">{myEntry.score} очков · {myEntry.rank ? `#${myEntry.rank}` : 'без ранга'}</p>
             </div>
-            {battle.status === 'ACTIVE' && (
+            {battle.status === 'UPCOMING' && (
               <button
                 onClick={() => WebApp.showConfirm(
                   'Выйти из батла? Взнос вернётся только если на твоё фото ещё нет голосов.',
@@ -136,16 +136,14 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
         </div>
       )}
 
-      {/* Upcoming message */}
-      {battle.status === 'UPCOMING' && (
+      {/* Active — voting in progress, no new entries */}
+      {battle.status === 'ACTIVE' && !myEntry && (
         <div className="mx-4 mb-4 rounded-2xl p-4 flex items-center gap-3"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <Clock size={20} className="text-yellow-400 flex-shrink-0" />
+          <Clock size={20} className="text-pink-400 flex-shrink-0" />
           <div>
-            <p className="text-white font-semibold text-sm">Батл ещё не начался</p>
-            <p className="text-white/50 text-xs">
-              Старт: {new Date(battle.startsAt).toLocaleDateString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-            </p>
+            <p className="text-white font-semibold text-sm">Голосование идёт</p>
+            <p className="text-white/50 text-xs">Регистрация закрыта — приходи в следующий батл!</p>
           </div>
         </div>
       )}
