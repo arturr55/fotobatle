@@ -4,10 +4,10 @@ const { Telegraf, Markup } = require('telegraf')
 const bot = new Telegraf(process.env.BOT_TOKEN)
 const MINI_APP_URL = process.env.MINI_APP_URL || 'https://yourdomain.com'
 
-bot.command('start', (ctx) => {
+bot.command('start', async (ctx) => {
   const firstName = ctx.from.first_name
 
-  ctx.replyWithPhoto(
+  await ctx.replyWithPhoto(
     { url: 'https://i.imgur.com/placeholder.jpg' },
     {
       caption: `🔥 *ФотоБатл* — соревнуйся и выигрывай!\n\nПривет, ${firstName}!\n\n📸 Загружай фото\n❤️ Голосуй за других\n⭐ Выигрывай монеты\n\nСтарт — внутри!`,
@@ -17,7 +17,7 @@ bot.command('start', (ctx) => {
         [Markup.button.callback('❓ Как это работает?', 'how_it_works')]
       ])
     }
-  ).catch(() => {
+  ).catch(() =>
     ctx.reply(
       `🔥 *ФотоБатл* — соревнуйся и выигрывай!\n\nПривет, ${firstName}!\n\n📸 Загружай фото\n❤️ Голосуй за других\n⭐ Выигрывай монеты`,
       {
@@ -28,7 +28,17 @@ bot.command('start', (ctx) => {
         ])
       }
     )
-  })
+  )
+
+  // Send starter pack invoice
+  await ctx.replyWithInvoice(
+    'Стартовый пакет',
+    '50 монет — хватит на первый батл!',
+    `${ctx.from.id}:50`,
+    '',
+    'XTR',
+    [{ label: '50 монет', amount: 5 }]
+  ).catch((err) => console.error('Invoice error:', err))
 })
 
 bot.action('how_it_works', (ctx) => {
