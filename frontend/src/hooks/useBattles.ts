@@ -44,7 +44,7 @@ export function useVote(battleId: number) {
   })
 }
 
-function compressImage(file: File, maxWidth = 800, quality = 0.82): Promise<string> {
+function compressImage(file: File, maxWidth = 1200, quality = 0.85): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image()
     const url = URL.createObjectURL(file)

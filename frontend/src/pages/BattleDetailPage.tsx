@@ -111,7 +111,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
         <div className="mx-4 mb-4 rounded-2xl p-3"
           style={{ background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+            <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
               <img src={mediaUrl(myEntry.photoUrl)} alt="" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
@@ -217,7 +217,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
               <div key={entry.id} className="flex items-center gap-3 p-3 rounded-xl"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span className="text-lg">{['🥇', '🥈', '🥉'][i]}</span>
-                <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
                   <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">

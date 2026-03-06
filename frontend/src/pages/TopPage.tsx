@@ -26,7 +26,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
             {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
           </div>
 
-          <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+          <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
             <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
           </div>
 

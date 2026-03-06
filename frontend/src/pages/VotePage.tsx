@@ -53,8 +53,8 @@ function VoteCard({ battleId }: { battleId: number }) {
         transition={{ duration: 0.25 }}
         className="flex flex-col"
       >
-        <div className="relative mx-4 rounded-3xl overflow-hidden"
-          style={{ aspectRatio: '3/4', maxHeight: '60vh' }}>
+        <div className="relative rounded-3xl overflow-hidden mx-3"
+          style={{ aspectRatio: '3/4' }}>
           <img
             src={mediaUrl(entry.photoUrl)}
             alt="battle entry"
