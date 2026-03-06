@@ -6,59 +6,62 @@ import type { Battle } from '../api/client'
 
 function LeaderBoard({ battleId }: { battleId: number }) {
   const { data: battle } = useBattle(battleId)
-
   const entries = battle?.entries || []
 
+  if (entries.length === 0) {
+    return <div className="text-center py-10 text-white/30">Ещё нет участников</div>
+  }
+
+  const [first, ...rest] = entries
+
   return (
-    <div className="flex flex-col gap-2 px-4">
-      {entries.slice(0, 20).map((entry, i) => (
-        <div
-          key={entry.id}
-          className="flex items-center gap-3 p-3 rounded-2xl"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
-        >
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
-            i === 0 ? 'bg-yellow-500 text-black' :
-            i === 1 ? 'bg-gray-300 text-black' :
-            i === 2 ? 'bg-amber-700 text-white' :
-            'bg-white/10 text-white/60'
-          }`}>
-            {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-          </div>
-
-          <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-            <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-medium text-sm truncate">
-              {entry.user?.firstName || 'Участник'}
-            </p>
-            {entry.user?.username && (
-              <p className="text-white/40 text-xs truncate">@{entry.user.username}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col items-end">
-            <div className="flex items-center gap-1 text-pink-400">
-              <span className="font-bold text-sm">{entry.score}</span>
-              <span className="text-xs">очков</span>
-            </div>
-            {entry.prize && (
-              <div className="flex items-center gap-0.5 text-yellow-400 text-xs">
-                <Star size={10} fill="currentColor" />
-                <span>{entry.prize}</span>
-              </div>
-            )}
+    <div className="flex flex-col gap-3 px-4">
+      {/* 1st place — full width big card */}
+      <div className="relative rounded-3xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+        <img src={mediaUrl(first.photoUrl)} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(transparent 40%, rgba(0,0,0,0.85))' }} />
+        <div className="absolute top-3 left-3 text-2xl">🥇</div>
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <p className="text-white font-bold text-lg">{first.user?.firstName || 'Участник'}</p>
+          {first.user?.username && <p className="text-white/60 text-sm">@{first.user.username}</p>}
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-pink-400 font-bold">{first.score} очков</span>
+            {first.prize ? <span className="text-yellow-400 text-sm">+{first.prize} ⭐</span> : null}
           </div>
         </div>
-      ))}
+      </div>
 
-      {entries.length === 0 && (
-        <div className="text-center py-10 text-white/30">
-          <p>Ещё нет участников</p>
+      {/* 2nd and 3rd — side by side */}
+      {rest.slice(0, 2).length > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          {rest.slice(0, 2).map((entry, i) => (
+            <div key={entry.id} className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+              <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(transparent 40%, rgba(0,0,0,0.85))' }} />
+              <div className="absolute top-2 left-2 text-xl">{i === 0 ? '🥈' : '🥉'}</div>
+              <div className="absolute bottom-0 left-0 right-0 p-2">
+                <p className="text-white font-semibold text-sm truncate">{entry.user?.firstName || 'Участник'}</p>
+                <span className="text-pink-400 text-xs font-bold">{entry.score} очков</span>
+              </div>
+            </div>
+          ))}
         </div>
       )}
+
+      {/* Rest — compact list */}
+      {rest.slice(2).map((entry, i) => (
+        <div key={entry.id} className="flex items-center gap-3 p-2 rounded-xl"
+          style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <span className="text-white/40 text-sm w-5 text-center">{i + 4}</span>
+          <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+            <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm truncate">{entry.user?.firstName || 'Участник'}</p>
+          </div>
+          <span className="text-pink-400 text-sm font-bold">{entry.score}</span>
+        </div>
+      ))}
     </div>
   )
 }

@@ -31,14 +31,14 @@ bot.command('start', async (ctx) => {
   )
 
   // Send starter pack invoice
-  await ctx.replyWithInvoice(
-    'Стартовый пакет',
-    '50 монет — хватит на первый батл!',
-    `${ctx.from.id}:50`,
-    '',
-    'XTR',
-    [{ label: '50 монет', amount: 5 }]
-  ).catch((err) => console.error('Invoice error:', err))
+  await ctx.replyWithInvoice({
+    title: 'Стартовый пакет',
+    description: '50 монет — хватит на первый батл!',
+    payload: `${ctx.from.id}:50`,
+    provider_token: '',
+    currency: 'XTR',
+    prices: [{ label: '50 монет', amount: 5 }],
+  }).catch((err) => console.error('Invoice error:', err))
 })
 
 bot.action('how_it_works', (ctx) => {
