@@ -52,6 +52,7 @@ export interface User {
   balance: number
   totalWins: number
   totalEarned: number
+  isAdmin: boolean
 }
 
 export interface Transaction {

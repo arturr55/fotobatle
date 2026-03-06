@@ -38,7 +38,7 @@ export default function App() {
         {tab === 'profile' && <ProfilePage />}
         {tab === 'admin' && <AdminPage />}
       </div>
-      <BottomNav active={tab} onChange={setTab} isAdmin={!!(user as any)?.isAdmin} />
+      <BottomNav active={tab} onChange={setTab} isAdmin={!!user?.isAdmin} />
     </div>
   )
 }
