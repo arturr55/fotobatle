@@ -4,7 +4,7 @@ import { useUser } from '../hooks/useUser'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Star, Users, Camera, LogOut, Clock } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
-import api from '../api/client'
+import api, { mediaUrl } from '../api/client'
 
 interface Props {
   battleId: number
@@ -112,7 +112,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
           style={{ background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)' }}>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-              <img src={myEntry.photoUrl} alt="" className="w-full h-full object-cover" />
+              <img src={mediaUrl(myEntry.photoUrl)} alt="" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <p className="text-pink-400 font-semibold text-sm">Ты участвуешь!</p>
@@ -218,7 +218,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span className="text-lg">{['🥇', '🥈', '🥉'][i]}</span>
                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
-                  <img src={entry.photoUrl} alt="" className="w-full h-full object-cover" />
+                  <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-sm font-medium truncate">{entry.user?.firstName}</p>

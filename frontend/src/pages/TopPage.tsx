@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useBattles, useBattle } from '../hooks/useBattles'
 import { Trophy, Star } from 'lucide-react'
+import { mediaUrl } from '../api/client'
 
 function LeaderBoard({ battleId }: { battleId: number }) {
   const { data: battle } = useBattle(battleId)
@@ -25,7 +26,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
           </div>
 
           <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-            <img src={entry.photoUrl} alt="" className="w-full h-full object-cover" />
+            <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
           </div>
 
           <div className="flex-1 min-w-0">

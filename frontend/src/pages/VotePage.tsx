@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useBattles, useVoteEntry, useVote } from '../hooks/useBattles'
+import { mediaUrl } from '../api/client'
 
 const REACTIONS = [
   { id: 'heart', emoji: '❤️', points: 1, label: 'Нравится' },
@@ -55,7 +56,7 @@ function VoteCard({ battleId }: { battleId: number }) {
         <div className="relative mx-4 rounded-3xl overflow-hidden"
           style={{ aspectRatio: '3/4', maxHeight: '60vh' }}>
           <img
-            src={entry.photoUrl}
+            src={mediaUrl(entry.photoUrl)}
             alt="battle entry"
             className="w-full h-full object-cover"
           />
