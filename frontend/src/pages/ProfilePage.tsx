@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUser } from '../hooks/useUser'
 import api from '../api/client'
 import type { Transaction, WithdrawalRequest } from '../api/client'
-import { Star, Trophy, Wallet, ArrowDownCircle, Clock } from 'lucide-react'
+import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 function TransactionItem({ tx }: { tx: Transaction }) {
@@ -28,6 +28,8 @@ export default function ProfilePage() {
   const queryClient = useQueryClient()
   const [withdrawAmount, setWithdrawAmount] = useState('')
   const [showWithdraw, setShowWithdraw] = useState(false)
+  const [showDeposit, setShowDeposit] = useState(false)
+  const [depositLoading, setDepositLoading] = useState<number | null>(null)
 
   const { data: transactions } = useQuery<Transaction[]>({
     queryKey: ['transactions'],
@@ -53,6 +55,24 @@ export default function ProfilePage() {
       WebApp.showAlert(err.response?.data?.error || 'Ошибка')
     }
   })
+
+  const handleDeposit = async (stars: number) => {
+    setDepositLoading(stars)
+    try {
+      const { data } = await api.post('/balance/create-invoice', { stars })
+      WebApp.openInvoice(data.url, (status: string) => {
+        if (status === 'paid') {
+          queryClient.invalidateQueries({ queryKey: ['user'] })
+          queryClient.invalidateQueries({ queryKey: ['transactions'] })
+          setShowDeposit(false)
+        }
+      })
+    } catch (err: any) {
+      WebApp.showAlert(err.response?.data?.error || 'Ошибка создания счёта')
+    } finally {
+      setDepositLoading(null)
+    }
+  }
 
   const handleWithdraw = () => {
     const amount = parseInt(withdrawAmount)
@@ -124,6 +144,42 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Deposit button */}
+        <button
+          onClick={() => setShowDeposit(!showDeposit)}
+          className="w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 mb-2"
+          style={{ background: 'linear-gradient(135deg, #f59e0b, #ec4899)', border: 'none', cursor: 'pointer', color: 'white' }}
+        >
+          <PlusCircle size={18} />
+          Пополнить баланс
+        </button>
+
+        {showDeposit && (
+          <div className="rounded-2xl p-4 mb-3"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-white/60 text-xs mb-3">1 Stars = 10 монет. Выбери пакет:</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { stars: 5, coins: 50 },
+                { stars: 10, coins: 100 },
+                { stars: 25, coins: 250 },
+                { stars: 50, coins: 500 },
+              ].map(pkg => (
+                <button
+                  key={pkg.stars}
+                  onClick={() => handleDeposit(pkg.stars)}
+                  disabled={depositLoading !== null}
+                  className="py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50 flex flex-col items-center gap-1"
+                  style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', cursor: 'pointer' }}
+                >
+                  <span className="text-yellow-400">{depositLoading === pkg.stars ? '...' : `⭐ ${pkg.stars} Stars`}</span>
+                  <span className="text-white/60 text-xs">{pkg.coins} монет</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Withdraw button */}
         <button

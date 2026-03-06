@@ -52,6 +52,46 @@ bot.command('help', (ctx) => {
   )
 })
 
+// Must answer pre_checkout_query within 10 seconds
+bot.on('pre_checkout_query', (ctx) => {
+  ctx.answerPreCheckoutQuery(true)
+})
+
+bot.on('message', async (ctx) => {
+  if (!ctx.message.successful_payment) return
+
+  const payment = ctx.message.successful_payment
+  const parts = payment.invoice_payload.split(':')
+  const userId = parseInt(parts[0])
+  const coins = parseInt(parts[1])
+
+  const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000'
+  const BOT_SECRET = process.env.BOT_SECRET || ''
+
+  try {
+    const resp = await fetch(`${BACKEND_URL}/api/balance/deposit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-bot-secret': BOT_SECRET,
+      },
+      body: JSON.stringify({
+        userId,
+        coins,
+        telegramChargeId: payment.telegram_payment_charge_id,
+      }),
+    })
+    if (resp.ok) {
+      ctx.reply(`Баланс пополнен на ${coins} монет! Удачи в батлах!`)
+    } else {
+      ctx.reply('Оплата получена, но произошла ошибка зачисления. Напишите в поддержку.')
+    }
+  } catch (err) {
+    console.error('Deposit error:', err)
+    ctx.reply('Оплата получена, но произошла ошибка зачисления. Напишите в поддержку.')
+  }
+})
+
 bot.launch()
 
 console.log('Bot started!')

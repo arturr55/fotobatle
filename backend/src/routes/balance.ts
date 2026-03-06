@@ -1,10 +1,66 @@
-import { Router, Response } from 'express'
+import { Router, Response, Request } from 'express'
 import { authMiddleware, adminOnly, AuthRequest } from '../middleware/auth'
 import prisma from '../db'
 
 const router = Router()
 
+// Bot deposit endpoint (no auth middleware - uses shared secret)
+router.post('/deposit', async (req: Request, res: Response) => {
+  if (req.headers['x-bot-secret'] !== process.env.BOT_SECRET) {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  const { userId, coins, telegramChargeId } = req.body
+  if (!userId || !coins) return res.status(400).json({ error: 'Missing fields' })
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { balance: { increment: coins } }
+    }),
+    prisma.transaction.create({
+      data: {
+        userId,
+        type: 'DEPOSIT',
+        amount: coins,
+        description: 'Пополнение через Telegram Stars',
+        metadata: { telegramChargeId }
+      }
+    })
+  ])
+  res.json({ success: true })
+})
+
 router.use(authMiddleware)
+
+// Create Telegram Stars invoice link
+router.post('/create-invoice', async (req: AuthRequest, res: Response) => {
+  const BOT_TOKEN = process.env.BOT_TOKEN
+  if (!BOT_TOKEN) return res.status(500).json({ error: 'Not configured' })
+
+  const { stars } = req.body
+  const valid = [5, 10, 25, 50, 100]
+  if (!valid.includes(stars)) return res.status(400).json({ error: 'Invalid package' })
+
+  const coins = stars * 10
+  const payload = `${req.user!.id}:${coins}`
+
+  const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/createInvoiceLink`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: `${coins} монет`,
+      description: `Пополнение баланса ФотоБатл: ${coins} монет`,
+      payload,
+      currency: 'XTR',
+      prices: [{ label: `${coins} монет`, amount: stars }],
+    })
+  })
+
+  const data = await response.json() as { ok: boolean; result: string }
+  if (!data.ok) return res.status(500).json({ error: 'Failed to create invoice' })
+
+  res.json({ url: data.result })
+})
 
 // Request withdrawal
 router.post('/withdraw', async (req: AuthRequest, res: Response) => {
