@@ -171,15 +171,19 @@ export default function TopPage() {
       </div>
 
       {tab === 'live' && allBattles.length > 1 && (
-        <div className="flex gap-4 overflow-x-auto pb-3 px-4">
+        <div className="flex gap-2 overflow-x-auto pb-3 px-4">
           {allBattles.map(b => (
             <button
               key={b.id}
               onClick={() => setSelectedId(b.id)}
-              className={`flex-shrink-0 text-sm font-medium transition-all pb-1 ${
-                current?.id === b.id ? 'text-white' : 'text-white/40'
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                current?.id === b.id ? 'text-white' : 'text-white/50'
               }`}
-              style={{ background: 'none', border: 'none', borderBottom: current?.id === b.id ? '2px solid #ec4899' : '2px solid transparent', cursor: 'pointer' }}
+              style={{
+                background: current?.id === b.id ? 'rgba(236,72,153,0.15)' : 'rgba(255,255,255,0.04)',
+                border: current?.id === b.id ? '1px solid rgba(236,72,153,0.5)' : '1px solid rgba(255,255,255,0.1)',
+                cursor: 'pointer',
+              }}
             >
               {b.title}
             </button>

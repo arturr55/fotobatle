@@ -211,7 +211,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
       {/* Top 3 */}
       {top3.length > 0 && (
         <div className="px-4">
-          <h2 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Лидеры</h2>
+          <h2 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Участники</h2>
           <div className="flex flex-col gap-2">
             {top3.map((entry, i) => (
               <div key={entry.id} className="flex items-center gap-3 p-3 rounded-xl"
