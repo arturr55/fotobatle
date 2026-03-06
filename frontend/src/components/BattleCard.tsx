@@ -1,5 +1,5 @@
 import { Timer, Users, Star } from 'lucide-react'
-import { Battle } from '../api/client'
+import type { Battle } from '../api/client'
 
 interface Props {
   battle: Battle

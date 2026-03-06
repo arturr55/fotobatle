@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useBattle, useEnterBattle } from '../hooks/useBattles'
 import { useUser } from '../hooks/useUser'
-import { ArrowLeft, Star, Users, Upload, Camera } from 'lucide-react'
+import { ArrowLeft, Star, Users, Camera } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 interface Props {

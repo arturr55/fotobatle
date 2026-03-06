@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUser } from '../hooks/useUser'
-import api, { Transaction, WithdrawalRequest } from '../api/client'
+import api from '../api/client'
+import type { Transaction, WithdrawalRequest } from '../api/client'
 import { Star, Trophy, Wallet, ArrowDownCircle, Clock } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 

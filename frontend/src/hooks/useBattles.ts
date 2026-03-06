@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import api, { Battle, BattleEntry } from '../api/client'
+import api from '../api/client'
+import type { Battle, BattleEntry } from '../api/client'
 
 export function useBattles() {
   return useQuery<Battle[]>({
