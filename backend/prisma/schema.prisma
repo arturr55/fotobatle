@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  telegramId  BigInt   @unique
+  username    String?
+  firstName   String
+  lastName    String?
+  avatarUrl   String?
+  balance     Int      @default(0)
+  totalWins   Int      @default(0)
+  totalEarned Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries     BattleEntry[]
+  votes       Vote[]
+  transactions Transaction[]
+  withdrawals WithdrawalRequest[]
+}
+
+model Battle {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  category    String
+  coverUrl    String?
+  entryFee    Int          @default(50)
+  prizePool   Int          @default(0)
+  status      BattleStatus @default(UPCOMING)
+  startsAt    DateTime
+  endsAt      DateTime
+  createdAt   DateTime     @default(now())
+
+  entries BattleEntry[]
+}
+
+model BattleEntry {
+  id        Int      @id @default(autoincrement())
+  battleId  Int
+  userId    Int
+  photoUrl  String
+  score     Int      @default(0)
+  rank      Int?
+  prize     Int?
+  createdAt DateTime @default(now())
+
+  battle Battle @relation(fields: [battleId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  votes  Vote[]
+
+  @@unique([battleId, userId])
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  entryId   Int
+  userId    Int
+  reaction  String
+  points    Int
+  createdAt DateTime @default(now())
+
+  entry BattleEntry @relation(fields: [entryId], references: [id])
+  user  User        @relation(fields: [userId], references: [id])
+
+  @@unique([entryId, userId])
+}
+
+model Transaction {
+  id          Int             @id @default(autoincrement())
+  userId      Int
+  type        TransactionType
+  amount      Int
+  description String?
+  metadata    Json?
+  createdAt   DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model WithdrawalRequest {
+  id          Int              @id @default(autoincrement())
+  userId      Int
+  amount      Int
+  status      WithdrawalStatus @default(PENDING)
+  adminNote   String?
+  createdAt   DateTime         @default(now())
+  processedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum BattleStatus {
+  UPCOMING
+  ACTIVE
+  FINISHED
+  CANCELLED
+}
+
+enum TransactionType {
+  DEPOSIT
+  ENTRY_FEE
+  PRIZE
+  WITHDRAWAL
+  REFUND
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
