@@ -489,7 +489,9 @@ export default function ProfilePage() {
                     <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
                       {entry.battle.status === 'FINISHED' ? (
                         entry.rank ? `${['🥇','🥈','🥉'][entry.rank - 1] || `#${entry.rank}`} место · +${entry.prize ?? 0} BS⭐` : 'Не в топ-3'
-                      ) : entry.battle.status === 'ACTIVE' ? '🔥 Голосование идёт' : '⏳ Скоро старт'}
+                      ) : entry.battle.status === 'ACTIVE' ? '🔥 Голосование идёт'
+                        : entry.battle.status === 'UPCOMING' ? '⏳ Скоро старт'
+                        : '—'}
                     </p>
                   </div>
                   <span className="text-sm font-bold flex-shrink-0" style={{ color: '#fe7b11' }}>{entry.score} оч.</span>

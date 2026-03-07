@@ -60,7 +60,7 @@ router.get('/me/transactions', async (req: AuthRequest, res: Response) => {
 
 router.get('/me/entries', async (req: AuthRequest, res: Response) => {
   const entries = await prisma.battleEntry.findMany({
-    where: { userId: req.user!.id },
+    where: { userId: req.user!.id, battle: { status: { not: 'CANCELLED' } } },
     include: {
       battle: {
         select: { id: true, title: true, category: true, status: true, endsAt: true }
