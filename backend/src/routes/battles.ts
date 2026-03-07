@@ -259,14 +259,18 @@ router.delete('/:id/entry', async (req: AuthRequest, res: Response) => {
 
 // Admin: create battle
 router.post('/', adminOnly, async (req: AuthRequest, res: Response) => {
-  const { title, description, category, entryFee, startsAt, endsAt } = req.body
+  const { title, description, category, entryFee, startsAt, endsAt, prizeType, prizeConfig, sponsorPool } = req.body
 
   const battle = await prisma.battle.create({
     data: {
       title,
       description,
       category,
-      entryFee: entryFee || 50,
+      entryFee: entryFee ?? 5,
+      prizeType: prizeType || 'POOL_PERCENT',
+      prizeConfig: prizeConfig || [],
+      sponsorPool: sponsorPool || 0,
+      prizePool: sponsorPool || 0,
       startsAt: new Date(startsAt),
       endsAt: new Date(endsAt),
     }

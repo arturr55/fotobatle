@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '../api/client'
 import type { Battle, WithdrawalRequest } from '../api/client'
-import { Plus, CheckCircle, XCircle, Flag } from 'lucide-react'
+import { Plus, CheckCircle, XCircle, Flag, Trash2 } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 const DARK = '#1a162a'
@@ -35,6 +35,26 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
 }
 
+type PrizeType = 'POOL_PERCENT' | 'FIXED' | 'GIFT'
+type PrizePlace = { place: number; percent: number; amount: number; description: string }
+
+const defaultPlaces = (type: PrizeType): PrizePlace[] => {
+  if (type === 'POOL_PERCENT') return [
+    { place: 1, percent: 50, amount: 0, description: '' },
+    { place: 2, percent: 25, amount: 0, description: '' },
+    { place: 3, percent: 15, amount: 0, description: '' },
+  ]
+  if (type === 'FIXED') return [
+    { place: 1, percent: 0, amount: 50, description: '' },
+    { place: 2, percent: 0, amount: 25, description: '' },
+    { place: 3, percent: 0, amount: 10, description: '' },
+  ]
+  return [
+    { place: 1, percent: 0, amount: 0, description: 'Telegram Premium 3 мес.' },
+    { place: 2, percent: 0, amount: 0, description: '50 Telegram Stars' },
+  ]
+}
+
 function CreateBattleForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState({
@@ -44,6 +64,9 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
     entryFee: 5,
     startsAt: '',
     endsAt: '',
+    prizeType: 'POOL_PERCENT' as PrizeType,
+    prizeConfig: defaultPlaces('POOL_PERCENT'),
+    sponsorPool: 0,
   })
 
   const create = useMutation({
@@ -57,7 +80,29 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
   })
 
-  const set = (k: string, v: string | number) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+
+  const setPrizeType = (type: PrizeType) => setForm(f => ({ ...f, prizeType: type, prizeConfig: defaultPlaces(type) }))
+
+  const updatePlace = (i: number, field: keyof PrizePlace, value: any) => {
+    setForm(f => {
+      const config = [...f.prizeConfig]
+      config[i] = { ...config[i], [field]: value }
+      return { ...f, prizeConfig: config }
+    })
+  }
+
+  const addPlace = () => setForm(f => ({
+    ...f,
+    prizeConfig: [...f.prizeConfig, { place: f.prizeConfig.length + 1, percent: 0, amount: 0, description: '' }]
+  }))
+
+  const removePlace = (i: number) => setForm(f => ({
+    ...f,
+    prizeConfig: f.prizeConfig.filter((_, idx) => idx !== i).map((p, idx) => ({ ...p, place: idx + 1 }))
+  }))
+
+  const medals = ['🥇', '🥈', '🥉']
 
   return (
     <div className="flex flex-col gap-3 p-4 rounded-2xl mb-4"
@@ -84,9 +129,78 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
       </div>
 
       <div>
-        <label style={labelStyle}>Взнос (Батл Старс)</label>
-        <input type="number" style={inputStyle}
-          value={form.entryFee} onChange={e => set('entryFee', parseInt(e.target.value))} />
+        <label style={labelStyle}>Взнос BS⭐ (0 = бесплатно)</label>
+        <input type="number" min={0} style={inputStyle}
+          value={form.entryFee} onChange={e => set('entryFee', parseInt(e.target.value) || 0)} />
+      </div>
+
+      {/* Prize type */}
+      <div>
+        <label style={labelStyle}>Тип приза</label>
+        <div className="flex gap-2">
+          {(['POOL_PERCENT', 'FIXED', 'GIFT'] as PrizeType[]).map(t => (
+            <button key={t} onClick={() => setPrizeType(t)}
+              className="flex-1 py-2 rounded-xl text-xs font-semibold"
+              style={{
+                background: form.prizeType === t ? DARK : 'white',
+                color: form.prizeType === t ? 'white' : 'rgba(26,22,42,0.5)',
+                border: '1px solid rgba(26,22,42,0.15)', cursor: 'pointer'
+              }}>
+              {t === 'POOL_PERCENT' ? '% пула' : t === 'FIXED' ? 'Фикс. BS⭐' : '🎁 Подарок'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Sponsor pool for FIXED */}
+      {form.prizeType === 'FIXED' && form.entryFee === 0 && (
+        <div>
+          <label style={labelStyle}>Бюджет приза BS⭐ (спонсор)</label>
+          <input type="number" min={0} style={inputStyle}
+            value={form.sponsorPool} onChange={e => set('sponsorPool', parseInt(e.target.value) || 0)} />
+        </div>
+      )}
+
+      {/* Prize places */}
+      <div>
+        <label style={labelStyle}>Призовые места</label>
+        <div className="flex flex-col gap-2">
+          {form.prizeConfig.map((p, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-base w-6 flex-shrink-0">{medals[i] || `#${i + 1}`}</span>
+              {form.prizeType === 'POOL_PERCENT' && (
+                <div className="flex-1 flex items-center gap-1">
+                  <input type="number" min={0} max={100} style={{ ...inputStyle, padding: '8px 12px' }}
+                    value={p.percent} onChange={e => updatePlace(i, 'percent', parseInt(e.target.value) || 0)} />
+                  <span className="text-sm" style={{ color: 'rgba(26,22,42,0.5)' }}>%</span>
+                </div>
+              )}
+              {form.prizeType === 'FIXED' && (
+                <div className="flex-1 flex items-center gap-1">
+                  <input type="number" min={0} style={{ ...inputStyle, padding: '8px 12px' }}
+                    value={p.amount} onChange={e => updatePlace(i, 'amount', parseInt(e.target.value) || 0)} />
+                  <span className="text-sm" style={{ color: 'rgba(26,22,42,0.5)' }}>BS⭐</span>
+                </div>
+              )}
+              {form.prizeType === 'GIFT' && (
+                <input style={{ ...inputStyle, padding: '8px 12px', flex: 1 }}
+                  placeholder="Описание подарка"
+                  value={p.description} onChange={e => updatePlace(i, 'description', e.target.value)} />
+              )}
+              {form.prizeConfig.length > 1 && (
+                <button onClick={() => removePlace(i)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, flexShrink: 0 }}>
+                  <Trash2 size={15} color="rgba(220,38,38,0.7)" />
+                </button>
+              )}
+            </div>
+          ))}
+          <button onClick={addPlace}
+            className="flex items-center gap-1 text-xs py-1.5 px-3 rounded-xl"
+            style={{ background: 'rgba(26,22,42,0.06)', border: '1px dashed rgba(26,22,42,0.2)', cursor: 'pointer', color: 'rgba(26,22,42,0.5)' }}>
+            <Plus size={12} /> Добавить место
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-2">
