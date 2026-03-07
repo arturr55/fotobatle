@@ -386,8 +386,8 @@ router.delete('/:id', adminOnly, async (req: AuthRequest, res: Response) => {
   if (!battle) return res.status(404).json({ error: 'Battle not found' })
   if (battle.status === 'ACTIVE') return res.status(400).json({ error: 'Cannot delete an active battle. Finish it first.' })
 
-  // Refund entry fees if any entries exist
-  if (battle.entries.length > 0 && battle.entryFee > 0) {
+  // Refund entry fees for non-finished battles
+  if (battle.entries.length > 0 && battle.entryFee > 0 && battle.status !== 'FINISHED') {
     await prisma.$transaction(
       battle.entries.map(e =>
         prisma.user.update({ where: { id: e.userId }, data: { balance: { increment: battle.entryFee } } })
@@ -395,6 +395,12 @@ router.delete('/:id', adminOnly, async (req: AuthRequest, res: Response) => {
     )
   }
 
+  // Delete child records in order (no cascade on BattleEntry)
+  const entryIds = battle.entries.map(e => e.id)
+  if (entryIds.length > 0) {
+    await prisma.vote.deleteMany({ where: { entryId: { in: entryIds } } })
+    await prisma.battleEntry.deleteMany({ where: { battleId } })
+  }
   await prisma.battle.delete({ where: { id: battleId } })
   res.json({ success: true })
 })
