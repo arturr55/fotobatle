@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { useBattle, useEnterBattle } from '../hooks/useBattles'
 import { useUser } from '../hooks/useUser'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Users, Camera, LogOut, Clock, Share2 } from 'lucide-react'
+import { ArrowLeft, Star, Users, Camera, LogOut, Clock, Share2, ExternalLink } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 import api, { mediaUrl } from '../api/client'
 
@@ -66,7 +66,12 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
         WebApp.showAlert('Ты в батле! Голосование началось.')
       }
     } catch (err: any) {
-      WebApp.showAlert(err.response?.data?.error || 'Ошибка')
+      const errData = err.response?.data
+      if (errData?.error === 'NOT_SUBSCRIBED') {
+        WebApp.showAlert(`Сначала подпишись на @${errData.channel} — это условие участия в этом батле.`)
+      } else {
+        WebApp.showAlert(errData?.error || 'Ошибка')
+      }
     }
   }
 
@@ -178,6 +183,29 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
             <p className="font-semibold text-sm" style={{ color: DARK }}>Голосование идёт</p>
             <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>Регистрация закрыта — приходи в следующий батл!</p>
           </div>
+        </div>
+      )}
+
+      {/* Required channel subscription banner */}
+      {canEnter && (battle as any).requiredChannel && (
+        <div className="mx-4 mb-3 rounded-2xl p-4"
+          style={{ background: 'rgba(0,152,234,0.08)', border: '1px solid rgba(0,152,234,0.3)' }}>
+          <p className="font-semibold text-sm mb-1" style={{ color: '#0098EA' }}>
+            Обязательная подписка
+          </p>
+          <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.6)' }}>
+            Для участия нужно подписаться на канал{' '}
+            <b>@{(battle as any).requiredChannel.channelUsername}</b>{' '}
+            ({(battle as any).requiredChannel.subscribedCount}/{(battle as any).requiredChannel.targetSubscribers} подписчиков)
+          </p>
+          <button
+            onClick={() => WebApp.openTelegramLink(`https://t.me/${(battle as any).requiredChannel.channelUsername}`)}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ background: '#0098EA', border: 'none', cursor: 'pointer', color: 'white' }}
+          >
+            <ExternalLink size={15} />
+            Открыть канал и подписаться
+          </button>
         </div>
       )}
 

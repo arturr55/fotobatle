@@ -8,10 +8,9 @@ import TopPage from './pages/TopPage'
 import ProfilePage from './pages/ProfilePage'
 import BattleDetailPage from './pages/BattleDetailPage'
 import AdminPage from './pages/AdminPage'
-import TasksPage from './pages/TasksPage'
 import { useUser } from './hooks/useUser'
 
-type Tab = 'battles' | 'vote' | 'tasks' | 'top' | 'profile' | 'admin'
+type Tab = 'battles' | 'vote' | 'top' | 'profile' | 'admin'
 
 const MANIFEST_URL = 'https://selfless-abundance-production-77c6.up.railway.app/tonconnect-manifest.json'
 
@@ -60,7 +59,6 @@ export default function App() {
         <div className="pb-20">
           {tab === 'battles' && <BattlesPage onSelectBattle={setSelectedBattleId} />}
           {tab === 'vote' && <VotePage />}
-          {tab === 'tasks' && <TasksPage />}
           {tab === 'top' && <TopPage />}
           {tab === 'profile' && <ProfilePage />}
           {tab === 'admin' && <AdminPage />}

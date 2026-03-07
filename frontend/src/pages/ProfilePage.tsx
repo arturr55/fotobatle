@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUser } from '../hooks/useUser'
 import api, { mediaUrl } from '../api/client'
 import type { Transaction, WithdrawalRequest } from '../api/client'
-import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle, Users, Camera } from 'lucide-react'
+import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle, Users, Camera, Megaphone, X, ExternalLink } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
+import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react'
 
 const DARK = '#1a162a'
 const CARD = '#dad3cd'
@@ -26,13 +27,27 @@ function TransactionItem({ tx }: { tx: Transaction }) {
   )
 }
 
+const promotionStatusLabel: Record<string, { label: string; bg: string; color: string }> = {
+  PENDING_REVIEW:  { label: 'На модерации', bg: 'rgba(100,116,139,0.12)', color: '#64748b' },
+  PENDING_PAYMENT: { label: 'Ожидает оплаты', bg: 'rgba(254,123,17,0.12)', color: '#fe7b11' },
+  ACTIVE:          { label: 'Активен', bg: 'rgba(22,163,74,0.12)', color: '#16a34a' },
+  COMPLETED:       { label: 'Завершён', bg: 'rgba(22,163,74,0.08)', color: '#16a34a' },
+  EXPIRED:         { label: 'Истёк срок', bg: 'rgba(220,38,38,0.1)', color: '#dc2626' },
+  CANCELLED:       { label: 'Отклонён', bg: 'rgba(220,38,38,0.1)', color: '#dc2626' },
+}
+
 export default function ProfilePage() {
   const { data: user } = useUser()
   const queryClient = useQueryClient()
+  const [tonConnectUI] = useTonConnectUI()
+  const wallet = useTonWallet()
   const [withdrawAmount, setWithdrawAmount] = useState('')
   const [showWithdraw, setShowWithdraw] = useState(false)
   const [showDeposit, setShowDeposit] = useState(false)
   const [depositLoading, setDepositLoading] = useState<number | null>(null)
+  const [showBuyPanel, setShowBuyPanel] = useState(false)
+  const [promoForm, setPromoForm] = useState({ channelUsername: '', targetSubscribers: 100 })
+  const [payingPromoId, setPayingPromoId] = useState<number | null>(null)
 
   const { data: myEntries } = useQuery<any[]>({
     queryKey: ['my-entries'],
@@ -47,6 +62,39 @@ export default function ProfilePage() {
   const { data: withdrawals } = useQuery<WithdrawalRequest[]>({
     queryKey: ['withdrawals'],
     queryFn: () => api.get('/balance/withdrawals').then(r => r.data),
+  })
+
+  const { data: priceConfig } = useQuery<{ pricePerSub: number }>({
+    queryKey: ['promo-price'],
+    queryFn: () => api.get('/promotions/config/price').then(r => r.data),
+  })
+
+  const { data: myPromotions } = useQuery<any[]>({
+    queryKey: ['my-promotions'],
+    queryFn: () => api.get('/promotions/my').then(r => r.data),
+  })
+
+  const createPromotion = useMutation({
+    mutationFn: (data: { channelUsername: string; targetSubscribers: number }) =>
+      api.post('/promotions', data).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-promotions'] })
+      setPromoForm({ channelUsername: '', targetSubscribers: 100 })
+      setShowBuyPanel(false)
+      WebApp.showAlert('Заявка отправлена на модерацию! Мы уведомим вас о решении.')
+    },
+    onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка'),
+  })
+
+  const confirmPayment = useMutation({
+    mutationFn: ({ id, txHash }: { id: number; txHash: string }) =>
+      api.post(`/promotions/${id}/confirm-payment`, { txHash }).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-promotions'] })
+      setPayingPromoId(null)
+      WebApp.showAlert('Оплата подтверждена! Канал активирован.')
+    },
+    onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка'),
   })
 
   const withdrawMutation = useMutation({
@@ -103,6 +151,31 @@ export default function ProfilePage() {
         {s.label}
       </span>
     )
+  }
+
+  const handleTonPay = async (promo: any) => {
+    const platformWallet = import.meta.env.VITE_TON_WALLET
+    if (!platformWallet) return WebApp.showAlert('Кошелёк платформы не настроен')
+    if (!wallet) {
+      tonConnectUI.openModal()
+      return
+    }
+    setPayingPromoId(promo.id)
+    try {
+      const nanotons = BigInt(Math.round(promo.budgetTon * 1e9)).toString()
+      const result = await tonConnectUI.sendTransaction({
+        validUntil: Math.floor(Date.now() / 1000) + 600,
+        messages: [{
+          address: platformWallet,
+          amount: nanotons,
+          payload: btoa(`promotion:${promo.id}`),
+        }]
+      })
+      const txHash = result.boc
+      confirmPayment.mutate({ id: promo.id, txHash })
+    } catch {
+      setPayingPromoId(null)
+    }
   }
 
   if (!user) return null
@@ -241,6 +314,131 @@ export default function ProfilePage() {
                 {statusBadge(w.status)}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Buy subscribers */}
+        <button
+          onClick={() => setShowBuyPanel(!showBuyPanel)}
+          className="w-full py-3 rounded-2xl font-semibold text-sm transition-all active:scale-95 flex items-center justify-center gap-2"
+          style={{ background: '#0098EA', border: 'none', cursor: 'pointer', color: 'white', boxShadow: '0 4px 20px rgba(0,152,234,0.3)' }}
+        >
+          <Megaphone size={18} />
+          Купить подписчиков на канал
+        </button>
+
+        {showBuyPanel && (
+          <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-sm" style={{ color: DARK }}>Продвижение канала</h3>
+              <button onClick={() => setShowBuyPanel(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <X size={16} color="rgba(26,22,42,0.4)" />
+              </button>
+            </div>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>
+              Ваш канал будет показан участницам батлов как обязательная подписка для входа.
+            </p>
+
+            <div>
+              <label className="block text-xs mb-1" style={{ color: 'rgba(26,22,42,0.5)' }}>Username канала или группы</label>
+              <input
+                placeholder="@mychannel"
+                value={promoForm.channelUsername}
+                onChange={e => setPromoForm(f => ({ ...f, channelUsername: e.target.value }))}
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
+                style={{ background: 'white', border: '1px solid rgba(26,22,42,0.15)', color: DARK }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs mb-1" style={{ color: 'rgba(26,22,42,0.5)' }}>Количество подписчиков (мин. 10)</label>
+              <input
+                type="number"
+                min={10}
+                value={promoForm.targetSubscribers}
+                onChange={e => setPromoForm(f => ({ ...f, targetSubscribers: parseInt(e.target.value) || 10 }))}
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
+                style={{ background: 'white', border: '1px solid rgba(26,22,42,0.15)', color: DARK }}
+              />
+            </div>
+
+            {priceConfig && (
+              <div className="rounded-xl p-3 flex items-center justify-between" style={{ background: 'rgba(0,152,234,0.08)' }}>
+                <span className="text-xs" style={{ color: 'rgba(26,22,42,0.6)' }}>
+                  {promoForm.targetSubscribers} × {priceConfig.pricePerSub} TON
+                </span>
+                <span className="font-bold text-sm" style={{ color: '#0098EA' }}>
+                  = {(promoForm.targetSubscribers * priceConfig.pricePerSub).toFixed(4)} TON
+                </span>
+              </div>
+            )}
+
+            <a
+              href={`https://t.me/${import.meta.env.VITE_BOT_USERNAME || 'photobatletgBot'}?start=addtochannel`}
+              target="_blank" rel="noopener noreferrer"
+              className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 no-underline"
+              style={{ background: 'rgba(26,22,42,0.06)', color: 'rgba(26,22,42,0.6)', border: '1px dashed rgba(26,22,42,0.2)' }}
+            >
+              <ExternalLink size={14} />
+              Добавить бота в канал (нужно для проверки)
+            </a>
+
+            <button
+              onClick={() => createPromotion.mutate(promoForm)}
+              disabled={createPromotion.isPending || !promoForm.channelUsername || promoForm.targetSubscribers < 10}
+              className="w-full py-3 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+              style={{ background: '#0098EA', border: 'none', cursor: 'pointer' }}
+            >
+              {createPromotion.isPending ? 'Отправляем...' : 'Отправить на модерацию'}
+            </button>
+          </div>
+        )}
+
+        {/* My channel promotions */}
+        {myPromotions && myPromotions.length > 0 && (
+          <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Megaphone size={14} style={{ color: '#0098EA' }} />
+              <h3 className="text-sm font-semibold" style={{ color: DARK }}>Мои каналы</h3>
+            </div>
+            <div className="flex flex-col gap-3">
+              {myPromotions.map(promo => {
+                const s = promotionStatusLabel[promo.status] || { label: promo.status, bg: CARD, color: 'rgba(26,22,42,0.5)' }
+                return (
+                  <div key={promo.id} className="flex flex-col gap-2 pb-3 border-b last:border-0" style={{ borderColor: 'rgba(26,22,42,0.08)' }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-sm" style={{ color: DARK }}>@{promo.channelUsername}</p>
+                        <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                          {promo.subscribedCount} / {promo.targetSubscribers} подписчиков · {promo.budgetTon.toFixed(4)} TON
+                        </p>
+                      </div>
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: s.bg, color: s.color }}>
+                        {s.label}
+                      </span>
+                    </div>
+
+                    {promo.status === 'PENDING_PAYMENT' && (
+                      <div className="flex flex-col gap-1">
+                        {promo.paymentDeadline && (
+                          <p className="text-xs" style={{ color: '#dc2626' }}>
+                            Оплатите до {new Date(promo.paymentDeadline).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        )}
+                        <button
+                          onClick={() => handleTonPay(promo)}
+                          disabled={payingPromoId === promo.id || confirmPayment.isPending}
+                          className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2"
+                          style={{ background: '#0098EA', border: 'none', cursor: 'pointer' }}
+                        >
+                          {payingPromoId === promo.id ? 'Ожидание...' : `Оплатить ${promo.budgetTon.toFixed(4)} TON`}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
 

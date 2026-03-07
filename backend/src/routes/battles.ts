@@ -3,10 +3,12 @@ import { authMiddleware, adminOnly, AuthRequest } from '../middleware/auth'
 import prisma from '../db'
 import { finishBattle } from '../services/battleService'
 import { checkAchievements } from '../services/achievementService'
+import { sendNotification } from '../services/notifyService'
 
 const router = Router()
-
 router.use(authMiddleware)
+
+const BOT_TOKEN = process.env.BOT_TOKEN || ''
 
 // Get all active/upcoming battles
 router.get('/', async (req: AuthRequest, res: Response) => {
@@ -66,12 +68,22 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
             select: { id: true, username: true, firstName: true, avatarUrl: true }
           }
         }
+      },
+      battleChannels: {
+        orderBy: { order: 'asc' },
+        include: { promotion: { select: { id: true, channelUsername: true, targetSubscribers: true, subscribedCount: true, status: true } } }
       }
     }
   })
 
   if (!battle) return res.status(404).json({ error: 'Battle not found' })
-  res.json(battle)
+
+  // Find current active required channel
+  const currentChannel = battle.battleChannels.find(bc =>
+    bc.promotion.status === 'ACTIVE' && bc.promotion.subscribedCount < bc.promotion.targetSubscribers
+  )
+
+  res.json({ ...battle, requiredChannel: currentChannel?.promotion || null })
 })
 
 // Get random entry to vote on
@@ -180,6 +192,55 @@ router.post('/:id/enter', async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Insufficient balance' })
   }
 
+  // Check channel subscription requirement
+  const battleChannels = await prisma.battleChannel.findMany({
+    where: { battleId },
+    include: { promotion: true },
+    orderBy: { order: 'asc' }
+  })
+  const currentChannel = battleChannels.find(bc =>
+    bc.promotion.status === 'ACTIVE' && bc.promotion.subscribedCount < bc.promotion.targetSubscribers
+  )
+  if (currentChannel) {
+    const fullUser = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { telegramId: true } })
+    if (fullUser && BOT_TOKEN) {
+      try {
+        const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChatMember`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: `@${currentChannel.promotion.channelUsername}`, user_id: fullUser.telegramId.toString() })
+        })
+        const data = await r.json() as any
+        const status = data.result?.status
+        if (!['member', 'administrator', 'creator'].includes(status)) {
+          return res.status(400).json({ error: 'NOT_SUBSCRIBED', channel: currentChannel.promotion.channelUsername })
+        }
+      } catch {
+        return res.status(400).json({ error: 'SUBSCRIPTION_CHECK_FAILED', channel: currentChannel.promotion.channelUsername })
+      }
+    }
+
+    // Record subscription (if not already done)
+    const alreadySub = await prisma.channelSubscription.findUnique({
+      where: { userId_promotionId: { userId: req.user!.id, promotionId: currentChannel.promotionId } }
+    })
+    if (!alreadySub) {
+      await prisma.$transaction([
+        prisma.channelSubscription.create({ data: { userId: req.user!.id, promotionId: currentChannel.promotionId } }),
+        prisma.channelPromotion.update({ where: { id: currentChannel.promotionId }, data: { subscribedCount: { increment: 1 } } })
+      ])
+      // Check if promotion is now complete
+      const updated = await prisma.channelPromotion.findUnique({ where: { id: currentChannel.promotionId } })
+      if (updated && updated.subscribedCount >= updated.targetSubscribers) {
+        await prisma.channelPromotion.update({ where: { id: currentChannel.promotionId }, data: { status: 'COMPLETED' } })
+        const owner = await prisma.user.findUnique({ where: { id: updated.ownerId }, select: { telegramId: true } })
+        if (owner) {
+          await sendNotification(owner.telegramId, `🎉 Ваш канал @${updated.channelUsername} набрал ${updated.targetSubscribers} подписчиков! Продвижение завершено.`)
+        }
+      }
+    }
+  }
+
   const { photo } = req.body
   if (!photo || !photo.startsWith('data:image')) return res.status(400).json({ error: 'Photo required' })
   if (photo.length > 4 * 1024 * 1024) return res.status(400).json({ error: 'Photo too large (max 3MB)' })
@@ -259,7 +320,7 @@ router.delete('/:id/entry', async (req: AuthRequest, res: Response) => {
 
 // Admin: create battle
 router.post('/', adminOnly, async (req: AuthRequest, res: Response) => {
-  const { title, description, category, entryFee, minParticipants, startsAt, endsAt, prizeType, prizeConfig, sponsorPool } = req.body
+  const { title, description, category, entryFee, minParticipants, startsAt, endsAt, prizeType, prizeConfig, sponsorPool, channelQueue } = req.body
 
   const battle = await prisma.battle.create({
     data: {
@@ -276,6 +337,17 @@ router.post('/', adminOnly, async (req: AuthRequest, res: Response) => {
       endsAt: new Date(endsAt),
     }
   })
+
+  // Attach channel queue if provided (array of promotionIds in order)
+  if (channelQueue && Array.isArray(channelQueue) && channelQueue.length > 0) {
+    await prisma.battleChannel.createMany({
+      data: channelQueue.map((promotionId: number, idx: number) => ({
+        battleId: battle.id,
+        promotionId,
+        order: idx + 1
+      }))
+    })
+  }
 
   res.json(battle)
 })

@@ -28,13 +28,12 @@ model User {
   referrer    User?  @relation("referrals", fields: [referredBy], references: [id])
   referrals   User[] @relation("referrals")
 
-  entries      BattleEntry[]
-  votes        Vote[]
-  transactions Transaction[]
-  withdrawals  WithdrawalRequest[]
-  createdTasks Task[]      @relation("createdTasks")
-  taskEntries  TaskEntry[]
-  taskVotes    TaskVote[]
+  entries           BattleEntry[]
+  votes             Vote[]
+  transactions      Transaction[]
+  withdrawals       WithdrawalRequest[]
+  ownedPromotions   ChannelPromotion[]    @relation("OwnedPromotions")
+  channelSubs       ChannelSubscription[]
 }
 
 model Battle {
@@ -54,7 +53,8 @@ model Battle {
   endsAt      DateTime
   createdAt   DateTime     @default(now())
 
-  entries BattleEntry[]
+  entries        BattleEntry[]
+  battleChannels BattleChannel[]
 }
 
 model BattleEntry {
@@ -112,60 +112,56 @@ model WithdrawalRequest {
   user User @relation(fields: [userId], references: [id])
 }
 
-model Task {
-  id              Int        @id @default(autoincrement())
-  title           String
-  description     String?
-  channelUsername String
-  budget          Float      @default(0)
-  prizeConfig     Json       @default("[]")
-  status          TaskStatus @default(PENDING_PAYMENT)
-  creatorId       Int
-  paymentTxHash   String?
-  minParticipants Int        @default(2)
-  endsAt          DateTime?
-  createdAt       DateTime   @default(now())
-
-  creator User       @relation("createdTasks", fields: [creatorId], references: [id])
-  entries TaskEntry[]
-}
-
-model TaskEntry {
-  id        Int        @id @default(autoincrement())
-  taskId    Int
-  userId    Int
-  photoUrl  String
-  score     Int        @default(0)
-  rank      Int?
-  prize     Int?
-  createdAt DateTime   @default(now())
-
-  task  Task       @relation(fields: [taskId], references: [id])
-  user  User       @relation(fields: [userId], references: [id])
-  votes TaskVote[]
-
-  @@unique([taskId, userId])
-}
-
-model TaskVote {
-  id        Int      @id @default(autoincrement())
-  entryId   Int
-  userId    Int
-  reaction  String
-  points    Int
-  createdAt DateTime @default(now())
-
-  entry TaskEntry @relation(fields: [entryId], references: [id])
-  user  User      @relation(fields: [userId], references: [id])
-
-  @@unique([entryId, userId])
-}
-
-enum TaskStatus {
+enum PromotionStatus {
+  PENDING_REVIEW
   PENDING_PAYMENT
   ACTIVE
-  FINISHED
+  COMPLETED
+  EXPIRED
   CANCELLED
+}
+
+model ChannelPromotion {
+  id                Int             @id @default(autoincrement())
+  ownerId           Int
+  owner             User            @relation("OwnedPromotions", fields: [ownerId], references: [id])
+  channelUsername   String
+  targetSubscribers Int
+  subscribedCount   Int             @default(0)
+  budgetTon         Float
+  status            PromotionStatus @default(PENDING_REVIEW)
+  paymentDeadline   DateTime?
+  txHash            String?
+  createdAt         DateTime        @default(now())
+
+  battleChannels BattleChannel[]
+  subscriptions  ChannelSubscription[]
+}
+
+model BattleChannel {
+  id          Int              @id @default(autoincrement())
+  battleId    Int
+  battle      Battle           @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  promotionId Int
+  promotion   ChannelPromotion @relation(fields: [promotionId], references: [id])
+  order       Int
+
+  @@unique([battleId, order])
+}
+
+model ChannelSubscription {
+  userId      Int
+  user        User             @relation(fields: [userId], references: [id])
+  promotionId Int
+  promotion   ChannelPromotion @relation(fields: [promotionId], references: [id])
+  createdAt   DateTime         @default(now())
+
+  @@unique([userId, promotionId])
+}
+
+model PlatformConfig {
+  key   String @id
+  value String
 }
 
 enum BattleStatus {

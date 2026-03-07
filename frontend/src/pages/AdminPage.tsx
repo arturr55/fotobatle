@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '../api/client'
 import type { Battle, WithdrawalRequest } from '../api/client'
-import { Plus, CheckCircle, XCircle, Flag, Trash2 } from 'lucide-react'
+import { Plus, CheckCircle, XCircle, Flag, Trash2, Megaphone, Settings } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 const DARK = '#1a162a'
@@ -68,6 +68,12 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
     prizeConfig: defaultPlaces('POOL_PERCENT'),
     sponsorPool: 0,
     minParticipants: 2,
+    channelQueue: [] as number[],
+  })
+
+  const { data: activeChannels } = useQuery<any[]>({
+    queryKey: ['active-promotions'],
+    queryFn: () => api.get('/promotions/active').then(r => r.data),
   })
 
   const create = useMutation({
@@ -211,6 +217,47 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
+      {/* Channel queue */}
+      {activeChannels && activeChannels.length > 0 && (
+        <div>
+          <label style={labelStyle}>Очередь каналов для подписки (необязательно)</label>
+          <div className="flex flex-col gap-1.5">
+            {activeChannels.map(ch => {
+              const idx = form.channelQueue.indexOf(ch.id)
+              const selected = idx !== -1
+              return (
+                <button key={ch.id}
+                  onClick={() => setForm(f => ({
+                    ...f,
+                    channelQueue: selected
+                      ? f.channelQueue.filter(id => id !== ch.id)
+                      : [...f.channelQueue, ch.id]
+                  }))}
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-sm"
+                  style={{
+                    background: selected ? 'rgba(0,152,234,0.12)' : 'white',
+                    border: selected ? '1px solid rgba(0,152,234,0.4)' : '1px solid rgba(26,22,42,0.12)',
+                    cursor: 'pointer', color: DARK
+                  }}>
+                  <span>@{ch.channelUsername}</span>
+                  <span className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                    {selected ? `#${idx + 1} в очереди` : `${ch.subscribedCount}/${ch.targetSubscribers}`}
+                  </span>
+                </button>
+              )
+            })}
+            {form.channelQueue.length > 0 && (
+              <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                Порядок: {form.channelQueue.map((id, i) => {
+                  const ch = activeChannels.find(c => c.id === id)
+                  return `${i + 1}. @${ch?.channelUsername}`
+                }).join(', ')}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2">
         <div className="flex-1">
           <label style={labelStyle}>Старт</label>
@@ -351,9 +398,129 @@ function AdminBattles() {
   )
 }
 
+function AdminChannels() {
+  const queryClient = useQueryClient()
+  const [newPrice, setNewPrice] = useState('')
+
+  const { data: pending } = useQuery<any[]>({
+    queryKey: ['admin-pending-promos'],
+    queryFn: () => api.get('/promotions/admin/pending').then(r => r.data),
+  })
+
+  const { data: priceConfig } = useQuery<{ pricePerSub: number }>({
+    queryKey: ['promo-price'],
+    queryFn: () => api.get('/promotions/config/price').then(r => r.data),
+  })
+
+  const approve = useMutation({
+    mutationFn: (id: number) => api.post(`/promotions/${id}/approve`).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-promos'] })
+      WebApp.showAlert('Одобрено! Владелец канала получит уведомление с инвойсом.')
+    },
+    onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка'),
+  })
+
+  const cancel = useMutation({
+    mutationFn: (id: number) => api.post(`/promotions/${id}/cancel`).then(r => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-pending-promos'] }),
+    onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка'),
+  })
+
+  const setPrice = useMutation({
+    mutationFn: (price: string) => api.post('/promotions/config/price', { price }).then(r => r.data),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['promo-price'] })
+      setNewPrice('')
+      WebApp.showAlert(`Цена установлена: ${data.pricePerSub} TON за подписчика`)
+    },
+    onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка'),
+  })
+
+  const statusLabel: Record<string, string> = {
+    PENDING_REVIEW: 'На модерации',
+    PENDING_PAYMENT: 'Ожидает оплаты',
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Price config */}
+      <div className="rounded-2xl p-3" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <Settings size={13} style={{ color: 'rgba(26,22,42,0.45)' }} />
+          <p className="text-xs font-medium" style={{ color: 'rgba(26,22,42,0.6)' }}>
+            Цена за подписчика: <b style={{ color: DARK }}>{priceConfig?.pricePerSub ?? '...'} TON</b>
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            step="0.001"
+            placeholder="Новая цена TON"
+            value={newPrice}
+            onChange={e => setNewPrice(e.target.value)}
+            className="flex-1 rounded-xl px-3 py-2 text-sm outline-none"
+            style={{ background: 'white', border: '1px solid rgba(26,22,42,0.15)', color: DARK }}
+          />
+          <button
+            onClick={() => setPrice.mutate(newPrice)}
+            disabled={setPrice.isPending || !newPrice}
+            className="px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+            style={{ background: '#0098EA', border: 'none', cursor: 'pointer' }}
+          >
+            Сохранить
+          </button>
+        </div>
+      </div>
+
+      {/* Pending promotions */}
+      {!pending?.length ? (
+        <div className="text-center py-8 text-sm" style={{ color: 'rgba(26,22,42,0.4)' }}>
+          Нет заявок на модерацию
+        </div>
+      ) : (
+        pending.map(p => (
+          <div key={p.id} className="rounded-2xl p-3" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="font-medium text-sm" style={{ color: DARK }}>@{p.channelUsername}</p>
+                <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                  {p.owner.firstName} {p.owner.username ? `@${p.owner.username}` : ''} · {p.targetSubscribers} подписчиков
+                </p>
+                <p className="text-xs font-semibold mt-0.5" style={{ color: '#0098EA' }}>
+                  {p.budgetTon.toFixed(4)} TON
+                </p>
+              </div>
+              <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(100,116,139,0.12)', color: '#64748b' }}>
+                {statusLabel[p.status] || p.status}
+              </span>
+            </div>
+            {p.status === 'PENDING_REVIEW' && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => WebApp.showConfirm(`Одобрить @${p.channelUsername}?`, ok => { if (ok) approve.mutate(p.id) })}
+                  className="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl text-xs font-medium"
+                  style={{ background: 'rgba(22,163,74,0.12)', color: '#16a34a', border: 'none', cursor: 'pointer' }}>
+                  <CheckCircle size={13} /> Одобрить
+                </button>
+                <button
+                  onClick={() => cancel.mutate(p.id)}
+                  className="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl text-xs font-medium"
+                  style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', border: 'none', cursor: 'pointer' }}>
+                  <XCircle size={13} /> Отклонить
+                </button>
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  )
+}
+
 export default function AdminPage() {
   const [showCreate, setShowCreate] = useState(false)
-  const [tab, setTab] = useState<'battles' | 'withdrawals'>('battles')
+  const [tab, setTab] = useState<'battles' | 'withdrawals' | 'channels'>('battles')
 
   return (
     <div className="flex flex-col pb-24">
@@ -392,21 +559,23 @@ export default function AdminPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 p-1 rounded-2xl" style={{ background: CARD }}>
-          {(['battles', 'withdrawals'] as const).map(t => (
+        <div className="flex gap-1 p-1 rounded-2xl" style={{ background: CARD }}>
+          {(['battles', 'channels', 'withdrawals'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
+              className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
               style={{
                 background: tab === t ? DARK : 'transparent',
                 color: tab === t ? 'white' : 'rgba(26,22,42,0.5)',
                 border: 'none', cursor: 'pointer',
               }}>
-              {t === 'battles' ? 'Батлы' : 'Выводы'}
+              {t === 'battles' ? 'Батлы' : t === 'channels' ? 'Каналы' : 'Выводы'}
             </button>
           ))}
         </div>
 
-        {tab === 'battles' ? <AdminBattles /> : <AdminWithdrawals />}
+        {tab === 'battles' && <AdminBattles />}
+        {tab === 'channels' && <AdminChannels />}
+        {tab === 'withdrawals' && <AdminWithdrawals />}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
-import { Flame, Trophy, User, Zap, Shield, ClipboardList } from 'lucide-react'
+import { Flame, Trophy, User, Zap, Shield } from 'lucide-react'
 
-type Tab = 'battles' | 'vote' | 'tasks' | 'top' | 'profile' | 'admin'
+type Tab = 'battles' | 'vote' | 'top' | 'profile' | 'admin'
 
 interface Props {
   active: Tab
@@ -11,7 +11,6 @@ interface Props {
 const baseTabs = [
   { id: 'battles' as Tab, icon: Zap, label: 'Батлы' },
   { id: 'vote' as Tab, icon: Flame, label: 'Голосовать' },
-  { id: 'tasks' as Tab, icon: ClipboardList, label: 'Задания' },
   { id: 'top' as Tab, icon: Trophy, label: 'Топ' },
   { id: 'profile' as Tab, icon: User, label: 'Профиль' },
 ]
