@@ -66,7 +66,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
 
   const handleShare = (entryId: number) => {
     const botUsername = import.meta.env.VITE_BOT_USERNAME || 'fotobatle_bot'
-    const link = `https://t.me/${botUsername}/FhotoBatle?startapp=e${entryId}`
+    const link = `https://t.me/${botUsername}/PhotoBatle?startapp=e${entryId}`
     const text = `Оцени моё фото в ФотоБатл! 📸🔥`
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`
     WebApp.openTelegramLink(shareUrl)
