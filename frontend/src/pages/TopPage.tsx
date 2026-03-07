@@ -20,7 +20,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
   return (
     <div className="flex flex-col gap-3 px-4">
       {/* 1st place */}
-      <div className="relative rounded-3xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+      <div className="relative rounded-3xl overflow-hidden" style={{ height: '260px' }}>
         <img src={mediaUrl(first.photoUrl)} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(transparent 40%, rgba(0,0,0,0.85))' }} />
         <div className="absolute top-3 left-3 text-2xl">🥇</div>
@@ -38,7 +38,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
       {rest.slice(0, 2).length > 0 && (
         <div className="grid grid-cols-2 gap-3">
           {rest.slice(0, 2).map((entry, i) => (
-            <div key={entry.id} className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+            <div key={entry.id} className="relative rounded-2xl overflow-hidden" style={{ height: '180px' }}>
               <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(transparent 40%, rgba(0,0,0,0.85))' }} />
               <div className="absolute top-2 left-2 text-xl">{i === 0 ? '🥈' : '🥉'}</div>
@@ -189,7 +189,7 @@ export default function TopPage() {
               onClick={() => setSelectedId(b.id)}
               className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all"
               style={{
-                background: current?.id === b.id ? DARK : CARD,
+                background: current?.id === b.id ? '#fe7b11' : CARD,
                 color: current?.id === b.id ? 'white' : 'rgba(26,22,42,0.6)',
                 border: '1px solid rgba(26,22,42,0.12)',
                 cursor: 'pointer',

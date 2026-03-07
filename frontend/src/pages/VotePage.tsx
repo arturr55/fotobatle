@@ -37,14 +37,17 @@ function VoteCard({ battleId }: { battleId: number }) {
 
   if (!entry) {
     return (
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center"
-        style={{ background: '#080812' }}
-      >
-        <span className="text-6xl mb-4">✅</span>
-        <p className="text-xl font-bold text-white mb-2">Все оценено!</p>
-        <p className="text-sm text-white/40">Ты оценил все фото в этом батле.</p>
-        <p className="text-xs text-white/25 mt-1">Возвращайся позже!</p>
+      <div className="absolute inset-0" style={{ background: '#fcfeff' }}>
+        {/* Dark bottom sheet — half screen */}
+        <div
+          className="absolute bottom-0 left-0 right-0 rounded-t-3xl flex flex-col items-center justify-center px-8 text-center"
+          style={{ height: '52%', background: '#1a162a' }}
+        >
+          <span className="text-5xl mb-4">✅</span>
+          <p className="text-2xl font-bold text-white mb-2">Все оценено!</p>
+          <p className="text-sm text-white/50">Ты оценил все фото в этом батле.</p>
+          <p className="text-xs text-white/30 mt-1">Возвращайся позже!</p>
+        </div>
       </div>
     )
   }
@@ -163,15 +166,15 @@ export default function VotePage() {
   return (
     <div
       className="relative overflow-hidden"
-      style={{ height: 'calc(100dvh - 80px)', background: '#080812' }}
+      style={{ height: 'calc(100dvh - 80px)', background: '#fcfeff' }}
     >
       {currentBattle ? (
         <VoteCard battleId={currentBattle.id} />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
           <span className="text-6xl mb-4">🔥</span>
-          <p className="text-xl font-bold text-white mb-2">Нет активных батлов</p>
-          <p className="text-sm text-white/40">Скоро появятся новые!</p>
+          <p className="text-xl font-bold mb-2" style={{ color: '#1a162a' }}>Нет активных батлов</p>
+          <p className="text-sm" style={{ color: 'rgba(26,22,42,0.45)' }}>Скоро появятся новые!</p>
         </div>
       )}
 
@@ -187,10 +190,9 @@ export default function VotePage() {
                   currentBattle?.id === b.id ? 'text-white' : 'text-white/60'
                 }`}
                 style={{
-                  background:
-                    currentBattle?.id === b.id ? 'rgba(236,72,153,0.85)' : 'rgba(0,0,0,0.55)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.15)',
+                  background: currentBattle?.id === b.id ? '#fe7b11' : 'rgba(26,22,42,0.08)',
+                  border: currentBattle?.id === b.id ? 'none' : '1px solid rgba(26,22,42,0.2)',
+                  color: currentBattle?.id === b.id ? 'white' : '#1a162a',
                   cursor: 'pointer',
                 }}
               >

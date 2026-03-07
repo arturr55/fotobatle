@@ -21,8 +21,7 @@ export default function BottomNav({ active, onChange, isAdmin }: Props) {
   const tabs = isAdmin ? [...baseTabs, adminTab] : baseTabs
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10"
-      style={{ background: 'rgba(15,15,15,0.95)', backdropFilter: 'blur(20px)' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ background: '#1a162a' }}>
       <div className="flex">
         {tabs.map(tab => {
           const Icon = tab.icon
