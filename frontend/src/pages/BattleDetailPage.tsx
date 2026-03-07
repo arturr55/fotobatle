@@ -205,6 +205,9 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
             <Share2 size={15} />
             Поделиться ссылкой на фото
           </button>
+          <p className="text-xs text-center mt-2" style={{ color: 'rgba(26,22,42,0.4)' }}>
+            Отправь друзьям — пусть проголосуют за тебя 🔥
+          </p>
         </div>
       )}
 
