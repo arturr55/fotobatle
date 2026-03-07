@@ -19,6 +19,18 @@ export default function App() {
   useEffect(() => {
     WebApp.ready()
     WebApp.expand()
+
+    const startParam = WebApp.initDataUnsafe?.start_param
+    if (startParam?.startsWith('e')) {
+      const entryId = parseInt(startParam.slice(1))
+      if (!isNaN(entryId)) {
+        import('./api/client').then(({ default: api }) => {
+          api.get(`/battles/entries/${entryId}`)
+            .then(r => setSelectedBattleId(r.data.battleId))
+            .catch(() => {})
+        })
+      }
+    }
   }, [])
 
   if (selectedBattleId) {

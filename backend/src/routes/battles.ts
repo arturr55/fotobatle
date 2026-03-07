@@ -38,6 +38,17 @@ router.get('/finished', async (req: AuthRequest, res: Response) => {
   res.json(battles)
 })
 
+// Resolve entry to battle (for deep links)
+router.get('/entries/:entryId', async (req: AuthRequest, res: Response) => {
+  const entryId = parseInt(req.params.entryId as string)
+  const entry = await prisma.battleEntry.findUnique({
+    where: { id: entryId },
+    select: { battleId: true }
+  })
+  if (!entry) return res.status(404).json({ error: 'Entry not found' })
+  res.json({ battleId: entry.battleId })
+})
+
 // Get single battle with top entries
 router.get('/:id', async (req: AuthRequest, res: Response) => {
   const battleId = parseInt(req.params.id as string)
