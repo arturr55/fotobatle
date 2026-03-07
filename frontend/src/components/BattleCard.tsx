@@ -16,7 +16,7 @@ const CATEGORY_GRADIENTS: Record<string, [string, string]> = {
 }
 
 const DARK = '#1a162a'
-const LIGHT = '#fcfeff'
+const LIGHT = '#dad3cd'
 
 function timeLeft(endsAt: string): string {
   const diff = new Date(endsAt).getTime() - Date.now()
