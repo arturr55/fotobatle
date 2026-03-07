@@ -54,10 +54,10 @@ export default function BattleCard({ battle, onClick }: Props) {
         {/* Prize pool badge */}
         <div
           className="flex items-center gap-1 px-2.5 py-1 rounded-full"
-          style={{ background: 'rgba(234,179,8,0.18)', border: '1px solid rgba(234,179,8,0.35)' }}
+          style={{ background: 'rgba(254,123,17,0.18)', border: '1px solid rgba(254,123,17,0.35)' }}
         >
-          <Star size={11} fill="currentColor" className="text-yellow-400" />
-          <span className="text-yellow-400 font-bold text-xs">{battle.prizePool}</span>
+          <Star size={11} fill="#fe7b11" color="#fe7b11" />
+          <span className="font-bold text-xs" style={{ color: '#fe7b11' }}>{battle.prizePool}</span>
         </div>
       </div>
 
@@ -86,8 +86,8 @@ export default function BattleCard({ battle, onClick }: Props) {
         <div
           className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm text-white"
           style={{
-            background: `linear-gradient(135deg, ${g1}, ${g2})`,
-            boxShadow: `0 4px 20px ${g1}40`,
+            background: '#fe7b11',
+            boxShadow: '0 4px 20px rgba(254,123,17,0.4)',
           }}
         >
           {isActive ? '🔥 Голосовать' : '📸 Участвовать'}
