@@ -27,9 +27,14 @@ function LeaderBoard({ battleId }: { battleId: number }) {
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <p className="text-white font-bold text-lg">{first.user?.firstName || 'Участник'}</p>
           {first.user?.username && <p className="text-white/60 text-sm">@{first.user.username}</p>}
-          <div className="flex items-center gap-2 mt-1">
-            <span className="font-bold text-sm" style={{ color: '#fe7b11' }}>{first.score} очков</span>
-            {first.prize ? <span className="text-white/70 text-sm">+{first.prize} ⭐</span> : null}
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="text-white/70 text-sm">набрала <b className="text-white">{first.score}</b> очков</span>
+            {first.prize ? (
+              <span className="text-sm font-bold px-2 py-0.5 rounded-full"
+                style={{ background: 'rgba(254,123,17,0.3)', color: '#fe7b11' }}>
+                ⭐ +{first.prize} Батл Старс
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
@@ -44,7 +49,9 @@ function LeaderBoard({ battleId }: { battleId: number }) {
               <div className="absolute top-2 left-2 text-xl">{i === 0 ? '🥈' : '🥉'}</div>
               <div className="absolute bottom-0 left-0 right-0 p-2">
                 <p className="text-white font-semibold text-sm truncate">{entry.user?.firstName || 'Участник'}</p>
-                <span className="text-xs font-bold" style={{ color: '#fe7b11' }}>{entry.score} очков</span>
+                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                  <b style={{ color: '#fe7b11' }}>{entry.score}</b> очков{entry.prize ? ` · ⭐+${entry.prize}` : ''}
+                </span>
               </div>
             </div>
           ))}
@@ -103,12 +110,17 @@ function WinnersSection() {
                   <p className="font-medium text-sm truncate" style={{ color: DARK }}>{entry.user?.firstName || 'Участник'}</p>
                   {entry.user?.username && <p className="text-xs" style={{ color: 'rgba(26,22,42,0.4)' }}>@{entry.user.username}</p>}
                 </div>
-                <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-sm font-bold" style={{ color: '#fe7b11' }}>{entry.score} оч.</span>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                    набрала <b style={{ color: DARK }}>{entry.score}</b> очков
+                  </span>
                   {entry.prize != null && entry.prize > 0 && (
-                    <div className="flex items-center gap-0.5 text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>
-                      <Star size={10} fill="#fe7b11" color="#fe7b11" />
-                      <span>+{entry.prize}</span>
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(254,123,17,0.12)' }}>
+                      <Star size={11} fill="#fe7b11" color="#fe7b11" />
+                      <span className="text-xs font-bold" style={{ color: '#fe7b11' }}>
+                        +{entry.prize} Батл Старс
+                      </span>
                     </div>
                   )}
                 </div>
