@@ -41,7 +41,7 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
     title: '',
     description: '',
     category: 'look',
-    entryFee: 50,
+    entryFee: 5,
     startsAt: '',
     endsAt: '',
   })
@@ -84,7 +84,7 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
       </div>
 
       <div>
-        <label style={labelStyle}>Взнос (монет)</label>
+        <label style={labelStyle}>Взнос (Батл Старс)</label>
         <input type="number" style={inputStyle}
           value={form.entryFee} onChange={e => set('entryFee', parseInt(e.target.value))} />
       </div>
@@ -150,7 +150,7 @@ function AdminWithdrawals() {
             <div>
               <p className="font-medium text-sm" style={{ color: DARK }}>{w.user.firstName}</p>
               <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
-                @{w.user.username || w.user.telegramId} · {w.amount} монет
+                @{w.user.username || w.user.telegramId} · {w.amount} BS⭐
               </p>
             </div>
             <div className="flex gap-2">
@@ -209,7 +209,7 @@ function AdminBattles() {
           <div>
             <p className="font-medium text-sm" style={{ color: DARK }}>{b.title}</p>
             <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
-              {b.status} · Пул: {b.prizePool} монет
+              {b.status} · Пул: {b.prizePool} BS⭐
             </p>
           </div>
           {b.status === 'ACTIVE' && (

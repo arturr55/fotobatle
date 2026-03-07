@@ -22,7 +22,7 @@ router.post('/deposit', async (req: Request, res: Response) => {
         userId,
         type: 'DEPOSIT',
         amount: coins,
-        description: 'Пополнение через Telegram Stars',
+        description: 'Пополнение Батл Старс через Telegram Stars',
         metadata: { telegramChargeId }
       }
     })
@@ -41,18 +41,18 @@ router.post('/create-invoice', async (req: AuthRequest, res: Response) => {
   const valid = [5, 10, 25, 50, 100]
   if (!valid.includes(stars)) return res.status(400).json({ error: 'Invalid package' })
 
-  const coins = stars * 10
+  const coins = stars
   const payload = `${req.user!.id}:${coins}`
 
   const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/createInvoiceLink`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      title: `${coins} монет`,
-      description: `Пополнение баланса ФотоБатл: ${coins} монет`,
+      title: `${coins} Батл Старс`,
+      description: `Пополнение баланса ФотоБатл: ${coins} Батл Старс`,
       payload,
       currency: 'XTR',
-      prices: [{ label: `${coins} монет`, amount: stars }],
+      prices: [{ label: `${coins} Батл Старс`, amount: stars }],
     })
   })
 
@@ -66,8 +66,8 @@ router.post('/create-invoice', async (req: AuthRequest, res: Response) => {
 router.post('/withdraw', async (req: AuthRequest, res: Response) => {
   const { amount } = req.body
 
-  if (!amount || amount < 100) {
-    return res.status(400).json({ error: 'Minimum withdrawal is 100 coins' })
+  if (!amount || amount < 10) {
+    return res.status(400).json({ error: 'Minimum withdrawal is 10 Батл Старс' })
   }
 
   const user = await prisma.user.findUnique({ where: { id: req.user!.id } })

@@ -79,7 +79,7 @@ export default function BattleCard({ battle, onClick }: Props) {
             <span>{isActive ? timeLeft(battle.endsAt) : 'Скоро'}</span>
           </div>
           <div className="w-px h-3" style={{ background: 'rgba(26,22,42,0.15)' }} />
-          <span>{battle.entryFee} монет</span>
+          <span>{battle.entryFee} BS⭐</span>
         </div>
 
         {/* CTA Button */}

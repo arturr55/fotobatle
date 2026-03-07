@@ -28,7 +28,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battle', battleId] })
       queryClient.invalidateQueries({ queryKey: ['user'] })
-      WebApp.showAlert('Ты вышел из батла. Взнос возвращён.')
+      WebApp.showAlert('Ты вышел из батла. Взнос BS⭐ возвращён.')
     },
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
   })
@@ -106,7 +106,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
           <Star size={16} fill="#fe7b11" color="#fe7b11" />
           <div>
             <p className="font-bold text-sm" style={{ color: '#fe7b11' }}>{battle.prizePool}</p>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Призовой пул</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Призовой пул BS⭐</p>
           </div>
         </div>
         <div className="flex-1 rounded-2xl p-3 flex items-center gap-2"
@@ -122,7 +122,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
           <Star size={16} style={{ color: 'rgba(26,22,42,0.4)' }} />
           <div>
             <p className="font-bold text-sm" style={{ color: DARK }}>{battle.entryFee}</p>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Взнос</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Взнос BS⭐</p>
           </div>
         </div>
       </div>
@@ -138,13 +138,13 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
             <div className="flex-1">
               <p className="font-semibold text-sm" style={{ color: '#fe7b11' }}>Ты участвуешь!</p>
               <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>
-                {myEntry.score} очков · {myEntry.rank ? `#${myEntry.rank}` : 'без ранга'}
+                {myEntry.score} BS⭐ · {myEntry.rank ? `#${myEntry.rank}` : 'без ранга'}
               </p>
             </div>
             {battle.status === 'UPCOMING' && (
               <button
                 onClick={() => WebApp.showConfirm(
-                  'Выйти из батла? Взнос вернётся только если нет голосов.',
+                  'Выйти из батла? Взнос BS⭐ вернётся только если нет голосов.',
                   (ok) => { if (ok) leaveBattle.mutate() }
                 )}
                 disabled={leaveBattle.isPending}
@@ -189,7 +189,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
 
           {!hasBalance && (
             <p className="text-red-500 text-sm mb-3">
-              Недостаточно монет. Нужно {battle.entryFee}, у тебя {user?.balance || 0}.
+              Недостаточно Батл Старс. Нужно {battle.entryFee} BS⭐, у тебя {user?.balance || 0}.
             </p>
           )}
 
@@ -215,7 +215,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
                   style={{ background: '#fe7b11', border: 'none', cursor: 'pointer' }}
                 >
-                  {enterBattle.isPending ? 'Загрузка...' : `Участвовать (${battle.entryFee} монет)`}
+                  {enterBattle.isPending ? 'Загрузка...' : `Участвовать (${battle.entryFee} BS⭐)`}
                 </button>
               </div>
             </div>
@@ -255,7 +255,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
                 )}
                 <div className="absolute bottom-0 left-0 right-0 p-2">
                   <p className="text-white text-xs font-semibold truncate">{entry.user?.firstName}</p>
-                  <p className="text-xs font-bold" style={{ color: '#fe7b11' }}>{entry.score} оч.</p>
+                  <p className="text-xs font-bold" style={{ color: '#fe7b11' }}>{entry.score} BS⭐</p>
                 </div>
               </div>
             ))}

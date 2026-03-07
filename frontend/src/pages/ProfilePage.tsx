@@ -57,7 +57,7 @@ export default function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ['withdrawals'] })
       setWithdrawAmount('')
       setShowWithdraw(false)
-      WebApp.showAlert('Заявка на вывод создана! Обработаем в течение 24-48 часов.')
+      WebApp.showAlert('Заявка на вывод создана! Обработаем в течение 24-48 часов. Выплата в Telegram Stars.')
     },
     onError: (err: any) => {
       WebApp.showAlert(err.response?.data?.error || 'Ошибка')
@@ -84,8 +84,8 @@ export default function ProfilePage() {
 
   const handleWithdraw = () => {
     const amount = parseInt(withdrawAmount)
-    if (!amount || amount < 100) {
-      WebApp.showAlert('Минимальная сумма вывода — 100 монет')
+    if (!amount || amount < 10) {
+      WebApp.showAlert('Минимальная сумма вывода — 10 Батл Старс')
       return
     }
     withdrawMutation.mutate(amount)
@@ -139,7 +139,7 @@ export default function ProfilePage() {
               <Star size={14} fill="#fe7b11" color="#fe7b11" />
               <span className="font-bold" style={{ color: DARK }}>{user.balance}</span>
             </div>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Баланс</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Батл Старс</p>
           </div>
           <div className="rounded-2xl p-3 text-center" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
             <div className="flex items-center justify-center gap-1 mb-1">
@@ -153,7 +153,7 @@ export default function ProfilePage() {
               <Wallet size={14} style={{ color: '#fe7b11' }} />
               <span className="font-bold" style={{ color: DARK }}>{user.totalEarned}</span>
             </div>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Заработано</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Заработано BS⭐</p>
           </div>
         </div>
 
@@ -169,9 +169,9 @@ export default function ProfilePage() {
 
         {showDeposit && (
           <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-            <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.55)' }}>1 Stars = 10 монет. Выбери пакет:</p>
+            <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.55)' }}>1 Telegram Star = 1 Батл Стар. Выбери пакет:</p>
             <div className="grid grid-cols-2 gap-2">
-              {[{ stars: 5, coins: 50 }, { stars: 10, coins: 100 }, { stars: 25, coins: 250 }, { stars: 50, coins: 500 }].map(pkg => (
+              {[{ stars: 5, coins: 5 }, { stars: 10, coins: 10 }, { stars: 25, coins: 25 }, { stars: 50, coins: 50 }].map(pkg => (
                 <button
                   key={pkg.stars}
                   onClick={() => handleDeposit(pkg.stars)}
@@ -180,7 +180,7 @@ export default function ProfilePage() {
                   style={{ background: 'white', border: '1px solid rgba(26,22,42,0.1)', cursor: 'pointer' }}
                 >
                   <span style={{ color: '#fe7b11' }}>{depositLoading === pkg.stars ? '...' : `⭐ ${pkg.stars} Stars`}</span>
-                  <span className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>{pkg.coins} монет</span>
+                  <span className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>{pkg.coins} Батл Старс</span>
                 </button>
               ))}
             </div>
@@ -199,7 +199,7 @@ export default function ProfilePage() {
 
         {showWithdraw && (
           <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-            <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.55)' }}>Минимум 100 монет. Срок выплаты: 24-48 часов.</p>
+            <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.55)' }}>Минимум 10 Батл Старс. Срок выплаты: 24-48 часов.</p>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -290,7 +290,7 @@ export default function ProfilePage() {
                     <p className="text-sm font-medium truncate" style={{ color: DARK }}>{entry.battle.title}</p>
                     <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
                       {entry.battle.status === 'FINISHED' ? (
-                        entry.rank ? `${['🥇','🥈','🥉'][entry.rank - 1] || `#${entry.rank}`} место · +${entry.prize ?? 0} монет` : 'Не в топ-3'
+                        entry.rank ? `${['🥇','🥈','🥉'][entry.rank - 1] || `#${entry.rank}`} место · +${entry.prize ?? 0} BS⭐` : 'Не в топ-3'
                       ) : entry.battle.status === 'ACTIVE' ? '🔥 Голосование идёт' : '⏳ Скоро старт'}
                     </p>
                   </div>

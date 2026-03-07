@@ -33,11 +33,11 @@ bot.command('start', async (ctx) => {
   // Send starter pack invoice
   await ctx.replyWithInvoice({
     title: 'Стартовый пакет',
-    description: '50 монет — хватит на первый батл!',
-    payload: `${ctx.from.id}:50`,
+    description: '5 Батл Старс — хватит на первый батл!',
+    payload: `${ctx.from.id}:5`,
     provider_token: '',
     currency: 'XTR',
-    prices: [{ label: '50 монет', amount: 5 }],
+    prices: [{ label: '5 Батл Старс', amount: 5 }],
   }).catch((err) => console.error('Invoice error:', err))
 })
 
@@ -92,7 +92,7 @@ bot.on('message', async (ctx) => {
       }),
     })
     if (resp.ok) {
-      ctx.reply(`Баланс пополнен на ${coins} монет! Удачи в батлах!`)
+      ctx.reply(`Баланс пополнен на ${coins} Батл Старс! Удачи в батлах! ⭐`)
     } else {
       ctx.reply('Оплата получена, но произошла ошибка зачисления. Напишите в поддержку.')
     }
