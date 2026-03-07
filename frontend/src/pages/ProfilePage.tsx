@@ -243,11 +243,16 @@ export default function ProfilePage() {
         <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
             <Users size={14} style={{ color: '#fe7b11' }} />
-            <h3 className="text-sm font-semibold" style={{ color: DARK }}>Пригласи друга — получи 50 монет</h3>
+            <h3 className="text-sm font-semibold" style={{ color: DARK }}>Пригласи друга — получи 2 голоса</h3>
           </div>
-          <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.5)' }}>
-            Приглашено друзей: <b style={{ color: DARK }}>{(user as any).referralCount ?? 0}</b>
-          </p>
+          <div className="flex gap-4 mb-3">
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>
+              Приглашено: <b style={{ color: DARK }}>{(user as any).referralCount ?? 0}</b>
+            </p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>
+              Бонусных голосов: <b style={{ color: '#fe7b11' }}>{(user as any).bonusVotes ?? 0}</b>
+            </p>
+          </div>
           <button
             onClick={() => {
               const botUsername = import.meta.env.VITE_BOT_USERNAME || 'photobatletgBot'

@@ -17,6 +17,7 @@ model User {
   balance     Int      @default(0)
   totalWins   Int      @default(0)
   totalEarned Int      @default(0)
+  bonusVotes  Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

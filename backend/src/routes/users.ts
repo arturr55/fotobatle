@@ -19,6 +19,7 @@ router.get('/me', async (req: AuthRequest, res: Response) => {
       balance: true,
       totalWins: true,
       totalEarned: true,
+      bonusVotes: true,
       createdAt: true,
       _count: { select: { referrals: true } }
     }
@@ -40,19 +41,9 @@ router.post('/claim-referral', async (req: AuthRequest, res: Response) => {
   const referrer = await prisma.user.findUnique({ where: { id: referrerId } })
   if (!referrer) return res.status(404).json({ error: 'Referrer not found' })
 
-  const REFERRAL_BONUS = 50
-
   await prisma.$transaction([
     prisma.user.update({ where: { id: currentUserId }, data: { referredBy: referrerId } }),
-    prisma.user.update({ where: { id: referrerId }, data: { balance: { increment: REFERRAL_BONUS } } }),
-    prisma.transaction.create({
-      data: {
-        userId: referrerId,
-        type: 'REFERRAL',
-        amount: REFERRAL_BONUS,
-        description: `Реферальный бонус от нового пользователя`,
-      }
-    })
+    prisma.user.update({ where: { id: referrerId }, data: { bonusVotes: { increment: 2 } } }),
   ])
 
   res.json({ success: true })
