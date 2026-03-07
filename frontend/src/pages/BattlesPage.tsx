@@ -15,21 +15,18 @@ export default function BattlesPage({ onSelectBattle }: Props) {
     <div className="flex flex-col gap-4 pb-4">
       {/* Hero header */}
       <div className="relative overflow-hidden mx-4 mt-4 rounded-3xl px-5 pt-8 pb-8"
-        style={{ background: 'linear-gradient(135deg, #1a0a3e 0%, #2d0a6e 45%, #0a1060 100%)' }}>
-        {/* Pink glow — left */}
-        <div className="absolute top-0 left-0 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #e040fb55, transparent)', transform: 'translate(-30%, -30%)' }} />
-        {/* Cyan glow — right */}
-        <div className="absolute bottom-0 right-0 w-40 h-40 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #00e5ff40, transparent)', transform: 'translate(30%, 30%)' }} />
-        {/* Violet glow — center */}
-        <div className="absolute top-1/2 left-1/2 w-56 h-32 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, #7c3aed30, transparent)', transform: 'translate(-50%, -50%)' }} />
+        style={{ background: 'linear-gradient(135deg, #14a7ea 0%, #0e8fd4 60%, #0a75b5 100%)' }}>
+        {/* Light shimmer top-right */}
+        <div className="absolute top-0 right-0 w-44 h-44 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.18), transparent)', transform: 'translate(30%, -30%)' }} />
+        {/* Darker depth bottom-left */}
+        <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(2,47,130,0.4), transparent)', transform: 'translate(-30%, 30%)' }} />
 
         <div className="relative">
           <div className="text-4xl mb-2">📸</div>
           <h1 className="text-3xl font-extrabold text-white mb-1">ФотоБатл</h1>
-          <p className="text-white/50 text-sm">Соревнуйся и выигрывай звёзды</p>
+          <p className="text-white/70 text-sm">Соревнуйся и выигрывай звёзды</p>
         </div>
       </div>
 

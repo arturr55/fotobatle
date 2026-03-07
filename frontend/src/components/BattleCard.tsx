@@ -70,9 +70,8 @@ export default function BattleCard({ battle, onClick }: Props) {
         {/* Status badge */}
         <div className="absolute top-3 left-3">
           <span
-            className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-              isActive ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
-            }`}
+            className="text-xs px-2.5 py-1 rounded-full font-semibold text-white"
+            style={{ background: 'rgba(20,167,234,0.85)', border: '1px solid rgba(20,167,234,0.6)' }}
           >
             {isActive ? '● Активный' : '○ Скоро'}
           </span>
@@ -88,22 +87,22 @@ export default function BattleCard({ battle, onClick }: Props) {
         </div>
       </div>
 
-      {/* Info zone — seamless continuation of gradient fade */}
-      <div className="px-4 pb-4 pt-3">
+      {/* Info zone — dark navy background */}
+      <div className="px-4 pb-4 pt-3 rounded-b-3xl" style={{ background: '#022f82' }}>
         <h3 className="text-white font-bold text-lg leading-tight mb-3">{battle.title}</h3>
 
         {/* Stats row */}
-        <div className="flex items-center gap-3 mb-4 text-white/40 text-xs">
+        <div className="flex items-center gap-3 mb-4 text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
           <div className="flex items-center gap-1.5">
             <Users size={12} />
             <span>{battle._count?.entries || 0} уч.</span>
           </div>
-          <div className="w-px h-3 bg-white/10" />
+          <div className="w-px h-3" style={{ background: 'rgba(255,255,255,0.15)' }} />
           <div className="flex items-center gap-1.5">
             <Timer size={12} />
             <span>{isActive ? timeLeft(battle.endsAt) : 'Скоро'}</span>
           </div>
-          <div className="w-px h-3 bg-white/10" />
+          <div className="w-px h-3" style={{ background: 'rgba(255,255,255,0.15)' }} />
           <span>{battle.entryFee} монет</span>
         </div>
 
