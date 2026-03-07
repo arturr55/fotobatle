@@ -374,7 +374,10 @@ function AdminBattles() {
 
   const { data: battles } = useQuery<Battle[]>({
     queryKey: ['admin-battles'],
-    queryFn: () => api.get('/battles').then(r => r.data),
+    queryFn: () => Promise.all([
+      api.get('/battles').then(r => r.data),
+      api.get('/battles/finished').then(r => r.data),
+    ]).then(([active, finished]) => [...active, ...finished]),
   })
 
   const finish = useMutation({

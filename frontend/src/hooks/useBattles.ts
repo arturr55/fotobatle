@@ -72,7 +72,7 @@ export function useEnterBattle() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battles'] })
       queryClient.invalidateQueries({ queryKey: ['user'] })
-      queryClient.invalidateQueries({ queryKey: ['user-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['my-entries'] })
     }
   })
 }

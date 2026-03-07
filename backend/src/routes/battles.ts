@@ -247,28 +247,27 @@ router.post('/:id/enter', async (req: AuthRequest, res: Response) => {
 
   const photoUrl = photo
 
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: req.user!.id },
-      data: { balance: { decrement: battle.entryFee } }
-    }),
-    prisma.battle.update({
-      where: { id: battleId },
-      data: { prizePool: { increment: battle.entryFee } }
-    }),
-    prisma.battleEntry.create({
-      data: { battleId, userId: req.user!.id, photoUrl }
-    }),
-    prisma.transaction.create({
-      data: {
-        userId: req.user!.id,
-        type: 'ENTRY_FEE',
-        amount: -battle.entryFee,
-        description: `Entry fee for "${battle.title}"`,
-        metadata: { battleId }
-      }
-    })
-  ])
+  const txOps: any[] = [
+    prisma.battleEntry.create({ data: { battleId, userId: req.user!.id, photoUrl } }),
+  ]
+
+  if (battle.entryFee > 0) {
+    txOps.push(
+      prisma.user.update({ where: { id: req.user!.id }, data: { balance: { decrement: battle.entryFee } } }),
+      prisma.battle.update({ where: { id: battleId }, data: { prizePool: { increment: battle.entryFee } } }),
+      prisma.transaction.create({
+        data: {
+          userId: req.user!.id,
+          type: 'ENTRY_FEE',
+          amount: -battle.entryFee,
+          description: `Взнос за батл "${battle.title}"`,
+          metadata: { battleId }
+        }
+      })
+    )
+  }
+
+  await prisma.$transaction(txOps)
 
   // Check achievements after entering
   const newAchievements = await checkAchievements(req.user!.id)
@@ -294,26 +293,27 @@ router.delete('/:id/entry', async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Cannot leave after receiving votes' })
   }
 
-  await prisma.$transaction([
+  const leaveOps: any[] = [
     prisma.battleEntry.delete({ where: { id: entry.id } }),
-    prisma.battle.update({
-      where: { id: battleId },
-      data: { prizePool: { decrement: battle.entryFee } }
-    }),
-    prisma.user.update({
-      where: { id: req.user!.id },
-      data: { balance: { increment: battle.entryFee } }
-    }),
-    prisma.transaction.create({
-      data: {
-        userId: req.user!.id,
-        type: 'REFUND',
-        amount: battle.entryFee,
-        description: `Выход из батла "${battle.title}"`,
-        metadata: { battleId }
-      }
-    })
-  ])
+  ]
+
+  if (battle.entryFee > 0) {
+    leaveOps.push(
+      prisma.battle.update({ where: { id: battleId }, data: { prizePool: { decrement: battle.entryFee } } }),
+      prisma.user.update({ where: { id: req.user!.id }, data: { balance: { increment: battle.entryFee } } }),
+      prisma.transaction.create({
+        data: {
+          userId: req.user!.id,
+          type: 'REFUND',
+          amount: battle.entryFee,
+          description: `Выход из батла "${battle.title}"`,
+          metadata: { battleId }
+        }
+      })
+    )
+  }
+
+  await prisma.$transaction(leaveOps)
 
   res.json({ success: true })
 })
