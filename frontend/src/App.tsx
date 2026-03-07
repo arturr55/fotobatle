@@ -30,6 +30,13 @@ export default function App() {
             .catch(() => {})
         })
       }
+    } else if (startParam?.startsWith('ref')) {
+      const referrerId = parseInt(startParam.slice(3))
+      if (!isNaN(referrerId)) {
+        import('./api/client').then(({ default: api }) => {
+          api.post('/users/claim-referral', { referrerId }).catch(() => {})
+        })
+      }
     }
   }, [])
 

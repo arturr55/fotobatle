@@ -20,6 +20,10 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  referredBy  Int?
+  referrer    User?  @relation("referrals", fields: [referredBy], references: [id])
+  referrals   User[] @relation("referrals")
+
   entries     BattleEntry[]
   votes       Vote[]
   transactions Transaction[]
@@ -110,6 +114,7 @@ enum TransactionType {
   PRIZE
   WITHDRAWAL
   REFUND
+  REFERRAL
 }
 
 enum WithdrawalStatus {

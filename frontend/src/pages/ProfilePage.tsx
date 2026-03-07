@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUser } from '../hooks/useUser'
 import api from '../api/client'
 import type { Transaction, WithdrawalRequest } from '../api/client'
-import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle } from 'lucide-react'
+import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle, Users } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 const DARK = '#1a162a'
@@ -238,6 +238,30 @@ export default function ProfilePage() {
             ))}
           </div>
         )}
+
+        {/* Referral */}
+        <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Users size={14} style={{ color: '#fe7b11' }} />
+            <h3 className="text-sm font-semibold" style={{ color: DARK }}>Пригласи друга — получи 50 монет</h3>
+          </div>
+          <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.5)' }}>
+            Приглашено друзей: <b style={{ color: DARK }}>{(user as any).referralCount ?? 0}</b>
+          </p>
+          <button
+            onClick={() => {
+              const botUsername = import.meta.env.VITE_BOT_USERNAME || 'photobatletgBot'
+              const link = `https://t.me/${botUsername}/PhotoBatle?startapp=ref${user.id}`
+              const text = `Присоединяйся к ФотоБатл — соревнуйся за фото и выигрывай монеты! 📸🔥`
+              WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`)
+            }}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ background: '#fe7b11', border: 'none', cursor: 'pointer', color: 'white' }}
+          >
+            <Users size={15} />
+            Поделиться реферальной ссылкой
+          </button>
+        </div>
 
         {/* Transactions */}
         <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
