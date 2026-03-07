@@ -14,19 +14,24 @@ export default function BattlesPage({ onSelectBattle }: Props) {
   return (
     <div className="flex flex-col gap-4 pb-4">
       {/* Hero header */}
-      <div className="relative mx-4 mt-4 rounded-3xl overflow-hidden px-5 py-6"
-        style={{ background: 'linear-gradient(135deg, #1e0533 0%, #2d0a4e 40%, #0f1d4e 100%)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="relative overflow-hidden px-5 pt-8 pb-0"
+        style={{ background: 'linear-gradient(135deg, #1e0533 0%, #2d0a4e 40%, #0f1d4e 100%)' }}>
         {/* decorative blobs */}
-        <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20 pointer-events-none"
+        <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-25 pointer-events-none"
           style={{ background: 'radial-gradient(circle, #ec4899, transparent)', transform: 'translate(30%, -30%)' }} />
-        <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full opacity-15 pointer-events-none"
+        <div className="absolute bottom-0 left-0 w-28 h-28 rounded-full opacity-20 pointer-events-none"
           style={{ background: 'radial-gradient(circle, #8b5cf6, transparent)', transform: 'translate(-30%, 30%)' }} />
 
-        <div className="relative">
-          <div className="text-3xl mb-2">📸</div>
-          <h1 className="text-2xl font-extrabold text-white mb-1">ФотоБатл</h1>
+        <div className="relative pb-8">
+          <div className="text-4xl mb-2">📸</div>
+          <h1 className="text-3xl font-extrabold text-white mb-1">ФотоБатл</h1>
           <p className="text-white/50 text-sm">Соревнуйся и выигрывай звёзды</p>
         </div>
+
+        {/* Wavy bottom edge of hero */}
+        <svg viewBox="0 0 390 32" preserveAspectRatio="none" className="w-full" style={{ display: 'block', marginBottom: -1 }}>
+          <path d="M0,8 Q60,0 120,18 Q180,32 240,14 Q300,0 360,20 Q378,26 390,16 L390,32 L0,32 Z" fill="#0f0f0f" />
+        </svg>
       </div>
 
       {isLoading && (
