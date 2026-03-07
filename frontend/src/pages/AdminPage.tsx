@@ -67,6 +67,7 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
     prizeType: 'POOL_PERCENT' as PrizeType,
     prizeConfig: defaultPlaces('POOL_PERCENT'),
     sponsorPool: 0,
+    minParticipants: 2,
   })
 
   const create = useMutation({
@@ -128,10 +129,17 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
         </select>
       </div>
 
-      <div>
-        <label style={labelStyle}>Взнос BS⭐ (0 = бесплатно)</label>
-        <input type="number" min={0} style={inputStyle}
-          value={form.entryFee} onChange={e => set('entryFee', parseInt(e.target.value) || 0)} />
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label style={labelStyle}>Взнос BS⭐ (0 = бесплатно)</label>
+          <input type="number" min={0} style={inputStyle}
+            value={form.entryFee} onChange={e => set('entryFee', parseInt(e.target.value) || 0)} />
+        </div>
+        <div className="flex-1">
+          <label style={labelStyle}>Мин. участников</label>
+          <input type="number" min={2} style={inputStyle}
+            value={form.minParticipants} onChange={e => set('minParticipants', parseInt(e.target.value) || 2)} />
+        </div>
       </div>
 
       {/* Prize type */}

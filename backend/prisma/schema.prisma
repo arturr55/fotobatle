@@ -40,12 +40,13 @@ model Battle {
   description String?
   category    String
   coverUrl    String?
-  entryFee    Int          @default(5)
-  prizePool   Int          @default(0)
-  sponsorPool Int          @default(0)
-  prizeType   String       @default("POOL_PERCENT")
-  prizeConfig Json         @default("[]")
-  status      BattleStatus @default(UPCOMING)
+  entryFee        Int          @default(5)
+  minParticipants Int          @default(2)
+  prizePool       Int          @default(0)
+  sponsorPool     Int          @default(0)
+  prizeType       String       @default("POOL_PERCENT")
+  prizeConfig     Json         @default("[]")
+  status          BattleStatus @default(UPCOMING)
   startsAt    DateTime
   endsAt      DateTime
   createdAt   DateTime     @default(now())

@@ -20,6 +20,35 @@ export async function finishBattle(battleId: number) {
     throw new Error('Battle not available to finish')
   }
 
+  // Check minimum participants
+  if (battle.entries.length < battle.minParticipants) {
+    await prisma.battle.update({ where: { id: battleId }, data: { status: 'CANCELLED' } })
+
+    // Refund entry fees to all participants
+    for (const entry of battle.entries) {
+      if (battle.entryFee > 0) {
+        await prisma.$transaction([
+          prisma.user.update({ where: { id: entry.userId }, data: { balance: { increment: battle.entryFee } } }),
+          prisma.transaction.create({
+            data: {
+              userId: entry.userId,
+              type: 'REFUND',
+              amount: battle.entryFee,
+              description: `Возврат взноса: батл "${battle.title}" отменён (мало участников)`,
+              metadata: { battleId }
+            }
+          })
+        ])
+      }
+      const user = await prisma.user.findUnique({ where: { id: entry.userId }, select: { telegramId: true } })
+      if (user) {
+        await sendNotification(user.telegramId,
+          `❌ <b>Батл "${battle.title}" отменён</b>\n\nНе набралось минимум ${battle.minParticipants} участников. Взнос возвращён.`)
+      }
+    }
+    return
+  }
+
   await prisma.battle.update({ where: { id: battleId }, data: { status: 'FINISHED' } })
 
   const prizeType = battle.prizeType
