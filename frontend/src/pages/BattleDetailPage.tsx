@@ -292,6 +292,14 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
               Загрузить фото
             </button>
           )}
+
+          {/* Anti-cheat notice */}
+          <div className="mt-3 px-1 flex items-start gap-2">
+            <span style={{ fontSize: '0.95rem', lineHeight: 1 }}>🛡️</span>
+            <p className="text-xs leading-relaxed" style={{ color: 'rgba(26,22,42,0.45)' }}>
+              Нажимая «Участвовать», вы соглашаетесь с правилами. Накрутка голосов и голосование за себя через другие аккаунты обнаруживается автоматически и ведёт к <b style={{ color: 'rgba(26,22,42,0.6)' }}>блокировке</b>. За ваше фото голосуют только другие участники.
+            </p>
+          </div>
         </div>
       )}
 
