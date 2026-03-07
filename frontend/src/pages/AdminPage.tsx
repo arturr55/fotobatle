@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '../api/client'
 import type { Battle, WithdrawalRequest } from '../api/client'
-import { Plus, CheckCircle, XCircle, Flag, Trash2, Megaphone, Settings } from 'lucide-react'
+import { Plus, CheckCircle, XCircle, Flag, Trash2, Megaphone, Settings, Pencil, X } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 const DARK = '#1a162a'
@@ -350,6 +350,8 @@ function AdminWithdrawals() {
 
 function AdminBattles() {
   const queryClient = useQueryClient()
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editForm, setEditForm] = useState<any>(null)
 
   const { data: battles } = useQuery<Battle[]>({
     queryKey: ['admin-battles'],
@@ -366,6 +368,50 @@ function AdminBattles() {
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
   })
 
+  const edit = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => api.patch(`/battles/${id}`, data).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-battles'] })
+      queryClient.invalidateQueries({ queryKey: ['battles'] })
+      setEditingId(null)
+    },
+    onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
+  })
+
+  const deleteBattle = useMutation({
+    mutationFn: (id: number) => api.delete(`/battles/${id}`).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-battles'] })
+      queryClient.invalidateQueries({ queryKey: ['battles'] })
+    },
+    onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
+  })
+
+  const startEdit = (b: any) => {
+    const toLocal = (iso: string) => {
+      const d = new Date(iso)
+      const pad = (n: number) => String(n).padStart(2, '0')
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+    }
+    setEditForm({
+      title: b.title,
+      description: b.description || '',
+      category: b.category,
+      entryFee: b.entryFee,
+      minParticipants: b.minParticipants,
+      startsAt: toLocal(b.startsAt),
+      endsAt: toLocal(b.endsAt),
+    })
+    setEditingId(b.id)
+  }
+
+  const statusLabel: Record<string, string> = {
+    UPCOMING: 'Скоро', ACTIVE: 'Идёт', FINISHED: 'Завершён', CANCELLED: 'Отменён'
+  }
+  const statusColor: Record<string, string> = {
+    UPCOMING: '#fe7b11', ACTIVE: '#16a34a', FINISHED: 'rgba(26,22,42,0.4)', CANCELLED: '#dc2626'
+  }
+
   if (!battles?.length) {
     return <div className="text-center py-8 text-sm" style={{ color: 'rgba(26,22,42,0.4)' }}>Нет батлов</div>
   }
@@ -373,24 +419,109 @@ function AdminBattles() {
   return (
     <div className="flex flex-col gap-2">
       {battles.map(b => (
-        <div key={b.id} className="rounded-2xl p-3 flex items-center justify-between"
+        <div key={b.id} className="rounded-2xl overflow-hidden"
           style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-          <div>
-            <p className="font-medium text-sm" style={{ color: DARK }}>{b.title}</p>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
-              {b.status} · Пул: {b.prizePool} BS⭐
-            </p>
+
+          {/* Battle row */}
+          <div className="flex items-center justify-between p-3">
+            <div className="flex-1 min-w-0 mr-2">
+              <p className="font-medium text-sm truncate" style={{ color: DARK }}>{b.title}</p>
+              <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                <span style={{ color: statusColor[b.status] || 'rgba(26,22,42,0.4)', fontWeight: 600 }}>
+                  {statusLabel[b.status] || b.status}
+                </span>
+                {' · '}{b._count?.entries ?? 0} уч. · {b.prizePool} BS⭐
+              </p>
+            </div>
+            <div className="flex gap-1.5 flex-shrink-0">
+              {b.status !== 'FINISHED' && b.status !== 'CANCELLED' && (
+                <button
+                  onClick={() => editingId === b.id ? setEditingId(null) : startEdit(b)}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ background: editingId === b.id ? DARK : 'rgba(26,22,42,0.08)', border: 'none', cursor: 'pointer' }}>
+                  {editingId === b.id
+                    ? <X size={13} color="white" />
+                    : <Pencil size={13} color="rgba(26,22,42,0.6)" />}
+                </button>
+              )}
+              {b.status === 'ACTIVE' && (
+                <button
+                  onClick={() => WebApp.showConfirm('Завершить батл и распределить призы?', ok => { if (ok) finish.mutate(b.id) })}
+                  className="flex items-center gap-1 px-2.5 h-8 rounded-xl text-xs font-medium"
+                  style={{ background: 'rgba(254,123,17,0.15)', color: '#fe7b11', border: 'none', cursor: 'pointer' }}>
+                  <Flag size={12} />
+                  Завершить
+                </button>
+              )}
+              {(b.status === 'UPCOMING' || b.status === 'FINISHED' || b.status === 'CANCELLED') && (
+                <button
+                  onClick={() => WebApp.showConfirm(
+                    b.entryFee > 0 && (b._count?.entries ?? 0) > 0
+                      ? `Удалить "${b.title}"? Взносы будут возвращены участникам.`
+                      : `Удалить "${b.title}"?`,
+                    ok => { if (ok) deleteBattle.mutate(b.id) }
+                  )}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ background: 'rgba(220,38,38,0.1)', border: 'none', cursor: 'pointer' }}>
+                  <Trash2 size={13} color="#dc2626" />
+                </button>
+              )}
+            </div>
           </div>
-          {b.status === 'ACTIVE' && (
-            <button
-              onClick={() => WebApp.showConfirm('Завершить батл и распределить призы?', (ok) => {
-                if (ok) finish.mutate(b.id)
-              })}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium"
-              style={{ background: 'rgba(254,123,17,0.15)', color: '#fe7b11', border: 'none', cursor: 'pointer' }}>
-              <Flag size={13} />
-              Завершить
-            </button>
+
+          {/* Inline edit form */}
+          {editingId === b.id && editForm && (
+            <div className="px-3 pb-3 flex flex-col gap-2" style={{ borderTop: '1px solid rgba(26,22,42,0.08)' }}>
+              <div className="h-2" />
+              <div>
+                <label style={labelStyle}>Название</label>
+                <input style={inputStyle} value={editForm.title}
+                  onChange={e => setEditForm((f: any) => ({ ...f, title: e.target.value }))} />
+              </div>
+              <div>
+                <label style={labelStyle}>Описание</label>
+                <input style={inputStyle} value={editForm.description}
+                  onChange={e => setEditForm((f: any) => ({ ...f, description: e.target.value }))} />
+              </div>
+              <div>
+                <label style={labelStyle}>Категория</label>
+                <select style={inputStyle} value={editForm.category}
+                  onChange={e => setEditForm((f: any) => ({ ...f, category: e.target.value }))}>
+                  {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label style={labelStyle}>Взнос BS⭐</label>
+                  <input type="number" min={0} style={inputStyle} value={editForm.entryFee}
+                    onChange={e => setEditForm((f: any) => ({ ...f, entryFee: parseInt(e.target.value) || 0 }))} />
+                </div>
+                <div className="flex-1">
+                  <label style={labelStyle}>Мин. участников</label>
+                  <input type="number" min={2} style={inputStyle} value={editForm.minParticipants}
+                    onChange={e => setEditForm((f: any) => ({ ...f, minParticipants: parseInt(e.target.value) || 2 }))} />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label style={labelStyle}>Старт</label>
+                  <input type="datetime-local" style={{ ...inputStyle, colorScheme: 'light' }} value={editForm.startsAt}
+                    onChange={e => setEditForm((f: any) => ({ ...f, startsAt: e.target.value }))} />
+                </div>
+                <div className="flex-1">
+                  <label style={labelStyle}>Конец</label>
+                  <input type="datetime-local" style={{ ...inputStyle, colorScheme: 'light' }} value={editForm.endsAt}
+                    onChange={e => setEditForm((f: any) => ({ ...f, endsAt: e.target.value }))} />
+                </div>
+              </div>
+              <button
+                onClick={() => edit.mutate({ id: b.id, data: editForm })}
+                disabled={edit.isPending}
+                className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+                style={{ background: '#fe7b11', border: 'none', cursor: 'pointer' }}>
+                {edit.isPending ? 'Сохраняем...' : 'Сохранить'}
+              </button>
+            </div>
           )}
         </div>
       ))}

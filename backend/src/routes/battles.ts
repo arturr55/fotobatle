@@ -352,6 +352,53 @@ router.post('/', adminOnly, async (req: AuthRequest, res: Response) => {
   res.json(battle)
 })
 
+// Admin: edit battle
+router.patch('/:id', adminOnly, async (req: AuthRequest, res: Response) => {
+  const battleId = parseInt(req.params.id as string)
+  const { title, description, category, entryFee, minParticipants, startsAt, endsAt, prizeType, prizeConfig, sponsorPool } = req.body
+
+  const battle = await prisma.battle.update({
+    where: { id: battleId },
+    data: {
+      ...(title !== undefined && { title }),
+      ...(description !== undefined && { description }),
+      ...(category !== undefined && { category }),
+      ...(entryFee !== undefined && { entryFee }),
+      ...(minParticipants !== undefined && { minParticipants }),
+      ...(startsAt !== undefined && { startsAt: new Date(startsAt) }),
+      ...(endsAt !== undefined && { endsAt: new Date(endsAt) }),
+      ...(prizeType !== undefined && { prizeType }),
+      ...(prizeConfig !== undefined && { prizeConfig }),
+      ...(sponsorPool !== undefined && { sponsorPool }),
+    }
+  })
+  res.json(battle)
+})
+
+// Admin: delete battle (only UPCOMING or CANCELLED)
+router.delete('/:id', adminOnly, async (req: AuthRequest, res: Response) => {
+  const battleId = parseInt(req.params.id as string)
+
+  const battle = await prisma.battle.findUnique({
+    where: { id: battleId },
+    include: { entries: { select: { userId: true, id: true } } }
+  })
+  if (!battle) return res.status(404).json({ error: 'Battle not found' })
+  if (battle.status === 'ACTIVE') return res.status(400).json({ error: 'Cannot delete an active battle. Finish it first.' })
+
+  // Refund entry fees if any entries exist
+  if (battle.entries.length > 0 && battle.entryFee > 0) {
+    await prisma.$transaction(
+      battle.entries.map(e =>
+        prisma.user.update({ where: { id: e.userId }, data: { balance: { increment: battle.entryFee } } })
+      )
+    )
+  }
+
+  await prisma.battle.delete({ where: { id: battleId } })
+  res.json({ success: true })
+})
+
 // Admin: finish battle manually
 router.post('/:id/finish', adminOnly, async (req: AuthRequest, res: Response) => {
   const battleId = parseInt(req.params.id as string)
