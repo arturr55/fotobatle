@@ -55,7 +55,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
   const handleSubmit = async () => {
     if (!selectedFile) return
     try {
-      const result = await enterBattle.mutateAsync({ battleId, photo: selectedFile })
+      const result = await enterBattle.mutateAsync({ battleId, photo: selectedFile, username: user?.username || user?.firstName || 'участник' })
       setPreview(null)
       setSelectedFile(null)
       const achievements = (result as any)?.achievements

@@ -44,7 +44,7 @@ export function useVote(battleId: number) {
   })
 }
 
-function compressImage(file: File, maxWidth = 1200, quality = 0.85): Promise<string> {
+function compressImage(file: File, username: string, maxWidth = 1200, quality = 0.85): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image()
     const url = URL.createObjectURL(file)
@@ -53,7 +53,26 @@ function compressImage(file: File, maxWidth = 1200, quality = 0.85): Promise<str
       const canvas = document.createElement('canvas')
       canvas.width = img.width * ratio
       canvas.height = img.height * ratio
-      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+      // Watermark
+      const text = `@${username} · ФотоБатл`
+      const fontSize = Math.max(16, Math.round(canvas.width * 0.035))
+      ctx.font = `bold ${fontSize}px Arial`
+      const padding = fontSize * 0.6
+      const textWidth = ctx.measureText(text).width
+      const x = canvas.width - textWidth - padding * 1.5
+      const y = canvas.height - padding
+
+      ctx.globalAlpha = 0.55
+      ctx.fillStyle = 'rgba(0,0,0,0.35)'
+      ctx.fillRect(x - padding * 0.5, y - fontSize, textWidth + padding, fontSize + padding * 0.5)
+      ctx.globalAlpha = 0.7
+      ctx.fillStyle = 'white'
+      ctx.fillText(text, x, y)
+      ctx.globalAlpha = 1
+
       URL.revokeObjectURL(url)
       resolve(canvas.toDataURL('image/jpeg', quality))
     }
@@ -65,8 +84,8 @@ export function useEnterBattle() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ battleId, photo }: { battleId: number; photo: File }) => {
-      const photoData = await compressImage(photo)
+    mutationFn: async ({ battleId, photo, username }: { battleId: number; photo: File; username: string }) => {
+      const photoData = await compressImage(photo, username)
       return api.post(`/battles/${battleId}/enter`, { photo: photoData }).then(r => r.data)
     },
     onSuccess: () => {

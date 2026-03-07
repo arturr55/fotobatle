@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '../api/client'
 import type { Battle, WithdrawalRequest } from '../api/client'
-import { Plus, CheckCircle, XCircle, Flag, Trash2, Megaphone, Settings, Pencil, X } from 'lucide-react'
+import { Plus, CheckCircle, XCircle, Flag, Trash2, Megaphone, Settings, Pencil, X, ShieldAlert } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 const DARK = '#1a162a'
@@ -371,6 +371,9 @@ function AdminBattles() {
   const queryClient = useQueryClient()
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<any>(null)
+  const [suspiciousId, setSuspiciousId] = useState<number | null>(null)
+  const [suspiciousData, setSuspiciousData] = useState<any>(null)
+  const [suspiciousLoading, setSuspiciousLoading] = useState(false)
 
   const { data: battles } = useQuery<Battle[]>({
     queryKey: ['admin-battles'],
@@ -408,6 +411,17 @@ function AdminBattles() {
     },
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
   })
+
+  const checkSuspicious = async (id: number) => {
+    if (suspiciousId === id) { setSuspiciousId(null); setSuspiciousData(null); return }
+    setSuspiciousLoading(true)
+    setSuspiciousId(id)
+    try {
+      const { data } = await api.get(`/battles/${id}/suspicious`)
+      setSuspiciousData(data)
+    } catch { setSuspiciousData(null) }
+    setSuspiciousLoading(false)
+  }
 
   const startEdit = (b: any) => {
     const toLocal = (iso: string) => {
@@ -456,6 +470,15 @@ function AdminBattles() {
               </p>
             </div>
             <div className="flex gap-1.5 flex-shrink-0">
+              {(b.status === 'ACTIVE' || b.status === 'FINISHED') && (b._count?.entries ?? 0) > 0 && (
+                <button
+                  onClick={() => checkSuspicious(b.id)}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ background: suspiciousId === b.id ? 'rgba(220,38,38,0.15)' : 'rgba(26,22,42,0.08)', border: 'none', cursor: 'pointer' }}
+                  title="Проверить читеров">
+                  <ShieldAlert size={13} color={suspiciousId === b.id ? '#dc2626' : 'rgba(26,22,42,0.5)'} />
+                </button>
+              )}
               {b.status !== 'FINISHED' && b.status !== 'CANCELLED' && (
                 <button
                   onClick={() => editingId === b.id ? setEditingId(null) : startEdit(b)}
@@ -490,6 +513,46 @@ function AdminBattles() {
               )}
             </div>
           </div>
+
+          {/* Suspicious votes panel */}
+          {suspiciousId === b.id && (
+            <div className="px-3 pb-3" style={{ borderTop: '1px solid rgba(26,22,42,0.08)' }}>
+              <p className="text-xs font-semibold pt-2 mb-2" style={{ color: 'rgba(26,22,42,0.5)' }}>
+                Анализ голосований · {suspiciousData?.totalVotes ?? 0} голосов всего
+              </p>
+              {suspiciousLoading && <p className="text-xs text-center py-2" style={{ color: 'rgba(26,22,42,0.4)' }}>Проверяем...</p>}
+              {suspiciousData?.entries?.map((e: any) => (
+                <div key={e.entryId} className="flex items-start justify-between py-2 border-b last:border-0"
+                  style={{ borderColor: 'rgba(26,22,42,0.06)' }}>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      {e.suspicious && <span className="text-sm">⚠️</span>}
+                      <p className="text-sm font-medium" style={{ color: DARK }}>
+                        {e.entryUser?.firstName || 'Участник'}
+                        {e.entryUser?.username ? ` @${e.entryUser.username}` : ''}
+                      </p>
+                    </div>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                      {e.voteCount} голосов · {e.concentration}% от всех
+                      {e.newAccountVotes > 0 && (
+                        <span style={{ color: '#dc2626' }}> · {e.newAccountVotes} новых акк.</span>
+                      )}
+                    </p>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
+                    style={{
+                      background: e.suspicious ? 'rgba(220,38,38,0.1)' : 'rgba(22,163,74,0.1)',
+                      color: e.suspicious ? '#dc2626' : '#16a34a'
+                    }}>
+                    {e.suspicious ? 'Подозрительно' : 'OK'}
+                  </span>
+                </div>
+              ))}
+              {suspiciousData?.entries?.every((e: any) => !e.suspicious) && (
+                <p className="text-xs text-center py-1" style={{ color: '#16a34a' }}>✓ Нарушений не обнаружено</p>
+              )}
+            </div>
+          )}
 
           {/* Inline edit form */}
           {editingId === b.id && editForm && (

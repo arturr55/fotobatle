@@ -399,6 +399,47 @@ router.delete('/:id', adminOnly, async (req: AuthRequest, res: Response) => {
   res.json({ success: true })
 })
 
+// Admin: suspicious votes report
+router.get('/:id/suspicious', adminOnly, async (req: AuthRequest, res: Response) => {
+  const battleId = parseInt(req.params.id as string)
+  const DAY = 7 * 24 * 60 * 60 * 1000 // accounts newer than 7 days
+
+  const votes = await prisma.vote.findMany({
+    where: { entry: { battleId } },
+    include: {
+      user: { select: { id: true, username: true, firstName: true, createdAt: true } },
+      entry: { select: { id: true, userId: true, user: { select: { firstName: true, username: true } } } }
+    }
+  })
+
+  // Group votes by entry
+  const byEntry: Record<number, { entryUser: any; votes: any[]; newAccountVotes: number }> = {}
+  for (const vote of votes) {
+    const eid = vote.entry.id
+    if (!byEntry[eid]) byEntry[eid] = { entryUser: vote.entry.user, votes: [], newAccountVotes: 0 }
+    byEntry[eid].votes.push(vote.user)
+    if (Date.now() - new Date(vote.user.createdAt).getTime() < DAY) {
+      byEntry[eid].newAccountVotes++
+    }
+  }
+
+  const totalVotes = votes.length
+  const suspicious = Object.entries(byEntry).map(([entryId, data]) => {
+    const concentration = totalVotes > 0 ? Math.round(data.votes.length / totalVotes * 100) : 0
+    return {
+      entryId: parseInt(entryId),
+      entryUser: data.entryUser,
+      voteCount: data.votes.length,
+      concentration,
+      newAccountVotes: data.newAccountVotes,
+      suspicious: concentration >= 60 || data.newAccountVotes >= 3,
+      voters: data.votes
+    }
+  }).sort((a, b) => b.voteCount - a.voteCount)
+
+  res.json({ totalVotes, entries: suspicious })
+})
+
 // Admin: finish battle manually
 router.post('/:id/finish', adminOnly, async (req: AuthRequest, res: Response) => {
   const battleId = parseInt(req.params.id as string)
