@@ -15,7 +15,24 @@ const CATEGORIES = [
   { id: 'hair',      label: '💇 Причёска' },
   { id: 'art',       label: '🎨 Арт / Косплей' },
   { id: 'landscape', label: '🌅 Пейзаж' },
+  { id: 'selfie',    label: '🤳 Селфи' },
+  { id: 'food',      label: '🍕 Еда' },
+  { id: 'sport',     label: '💪 Спорт' },
+  { id: 'night',     label: '🌃 Ночное фото' },
 ]
+
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  look:      'Покажи свой лучший лук! Стиль, макияж, аксессуары — всё что делает тебя уникальной. Победит самый запоминающийся образ.',
+  smile:     'Улыбнись миру! Самая искренняя и заразительная улыбка победит. Покажи, как ты умеешь радоваться жизни.',
+  pet:       'Твой пушистый, пернатый или чешуйчатый друг заслуживает быть звездой! Покажи самое милое фото своего питомца.',
+  hair:      'Твоя причёска — твоя визитная карточка. Укладка, стрижка, цвет — покажи лучший результат.',
+  art:       'Кто твой персонаж? Аниме, игры, кино или собственный арт — покажи лучшую работу. Победит самое яркое творчество.',
+  landscape: 'Красота вокруг нас. Закат, горы, море, городские огни — поймай идеальный кадр природы или города.',
+  selfie:    'Лучшее селфи в студию! Ракурс, свет, эмоция — всё имеет значение. Удиви всех своим идеальным снимком.',
+  food:      'Ты ешь глазами? Докажи! Аппетитное фото блюда, десерта или напитка — побеждает самый вкусный кадр.',
+  sport:     'Движение, энергия, сила. Фото с тренировки, соревнований или активного отдыха — побеждает самый динамичный кадр.',
+  night:     'Город не спит — и ты не спишь. Огни, неон, звёзды. Покажи ночь такой, какой видишь её ты.',
+}
 
 const inputStyle: React.CSSProperties = {
   background: 'white',
@@ -147,7 +164,10 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
 
       <div>
         <label style={labelStyle}>Категория</label>
-        <select style={inputStyle} value={form.category} onChange={e => set('category', e.target.value)}>
+        <select style={inputStyle} value={form.category} onChange={e => {
+          set('category', e.target.value)
+          if (!form.description) set('description', CATEGORY_DESCRIPTIONS[e.target.value] || '')
+        }}>
           {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
       </div>
