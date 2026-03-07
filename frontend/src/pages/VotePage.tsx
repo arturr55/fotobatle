@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
 import { useBattles, useVoteEntry, useVote } from '../hooks/useBattles'
 import { useUser } from '../hooks/useUser'
@@ -25,6 +25,10 @@ function VoteCard({ battleId, bonusVotes }: { battleId: number; bonusVotes: numb
   const fireOpacity = useTransform(x, [30, SWIPE_THRESHOLD], [0, 1])
   const skipOpacity = useTransform(x, [-SWIPE_THRESHOLD, -30], [1, 0])
   const controls = useAnimation()
+
+  useEffect(() => {
+    controls.start({ opacity: 1, scale: 1, x: 0 })
+  }, [entry?.id])
 
   const handleVote = async (reaction: string) => {
     if (!entry || voted) return
