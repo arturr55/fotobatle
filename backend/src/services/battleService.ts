@@ -2,7 +2,7 @@ import prisma from '../db'
 import { sendNotification } from './notifyService'
 
 const PRIZE_DISTRIBUTION = [0.50, 0.25, 0.15] // 1st, 2nd, 3rd place
-const PLATFORM_CUT = 0.10 // 10%
+const PLATFORM_CUT = 0.25 // 25%
 
 export async function finishBattle(battleId: number) {
   const battle = await prisma.battle.findUnique({
