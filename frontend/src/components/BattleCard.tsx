@@ -6,25 +6,17 @@ interface Props {
   onClick: () => void
 }
 
-const CATEGORY_EMOJI: Record<string, string> = {
-  look: '😎',
-  smile: '😁',
-  pet: '🐾',
-  hair: '💇',
-  art: '🎨',
-  landscape: '🌅',
-}
-
+// NICOLAI-inspired: violet, fuchsia, cyan neon palette
 const CATEGORY_GRADIENTS: Record<string, [string, string]> = {
-  look: ['#ec4899', '#8b5cf6'],
-  smile: ['#f97316', '#ef4444'],
-  pet: ['#10b981', '#3b82f6'],
-  hair: ['#f59e0b', '#ec4899'],
-  art: ['#8b5cf6', '#06b6d4'],
-  landscape: ['#06b6d4', '#10b981'],
+  look:      ['#c026d3', '#7c3aed'],
+  smile:     ['#f97316', '#ec4899'],
+  pet:       ['#06b6d4', '#6366f1'],
+  hair:      ['#e879f9', '#ec4899'],
+  art:       ['#8b5cf6', '#06b6d4'],
+  landscape: ['#10b981', '#06b6d4'],
 }
 
-const CARD_BG = '#0d0d1a'
+const CARD_BG = '#0d0d1f'
 
 function timeLeft(endsAt: string): string {
   const diff = new Date(endsAt).getTime() - Date.now()
@@ -37,47 +29,43 @@ function timeLeft(endsAt: string): string {
 }
 
 export default function BattleCard({ battle, onClick }: Props) {
-  const emoji = CATEGORY_EMOJI[battle.category] || '📸'
   const isActive = battle.status === 'ACTIVE'
-  const [g1, g2] = CATEGORY_GRADIENTS[battle.category] || ['#ec4899', '#8b5cf6']
+  const [g1, g2] = CATEGORY_GRADIENTS[battle.category] || ['#8b5cf6', '#06b6d4']
 
   return (
     <div
       onClick={onClick}
       className="relative overflow-hidden rounded-3xl cursor-pointer active:scale-95 transition-transform"
-      style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.06)' }}
+      style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)' }}
     >
-      {/* Gradient top zone */}
+      {/* Gradient top zone — aurora glow, no emoji */}
       <div
-        className="relative flex items-center justify-center"
+        className="relative overflow-hidden"
         style={{
-          height: '128px',
-          background: `linear-gradient(135deg, ${g1}50, ${g2}40)`,
+          height: '110px',
+          // Fades seamlessly into CARD_BG at bottom — no wave needed
+          background: `linear-gradient(160deg, ${g1}55 0%, ${g2}45 55%, ${CARD_BG} 100%)`,
         }}
       >
-        {/* Decorative radial glows */}
+        {/* Glow orb left */}
         <div
-          className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
+          className="absolute rounded-full pointer-events-none"
           style={{
-            background: `radial-gradient(circle, ${g2}60, transparent)`,
-            transform: 'translate(40%, -40%)',
+            width: 140, height: 140,
+            background: `radial-gradient(circle, ${g1}70, transparent 70%)`,
+            top: '50%', left: '20%',
+            transform: 'translate(-50%, -50%)',
           }}
         />
+        {/* Glow orb right-top */}
         <div
-          className="absolute bottom-0 left-0 w-24 h-24 rounded-full pointer-events-none"
+          className="absolute rounded-full pointer-events-none"
           style={{
-            background: `radial-gradient(circle, ${g1}50, transparent)`,
-            transform: 'translate(-40%, 40%)',
+            width: 100, height: 100,
+            background: `radial-gradient(circle, ${g2}65, transparent 70%)`,
+            top: '-20%', right: '15%',
           }}
         />
-
-        {/* Category emoji - overlaps the wave below */}
-        <span
-          className="relative z-10 text-6xl"
-          style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))' }}
-        >
-          {emoji}
-        </span>
 
         {/* Status badge */}
         <div className="absolute top-3 left-3">
@@ -100,21 +88,8 @@ export default function BattleCard({ battle, onClick }: Props) {
         </div>
       </div>
 
-      {/* Wavy SVG separator — dark wave eats into gradient from below */}
-      <svg
-        viewBox="0 0 390 28"
-        preserveAspectRatio="none"
-        className="w-full"
-        style={{ display: 'block', marginTop: -1 }}
-      >
-        <path
-          d="M0,6 Q50,0 100,16 Q150,28 200,12 Q250,0 300,20 Q345,28 390,10 L390,28 L0,28 Z"
-          fill={CARD_BG}
-        />
-      </svg>
-
-      {/* Dark info zone */}
-      <div className="px-4 pb-4 -mt-1">
+      {/* Info zone — seamless continuation of gradient fade */}
+      <div className="px-4 pb-4 pt-3">
         <h3 className="text-white font-bold text-lg leading-tight mb-3">{battle.title}</h3>
 
         {/* Stats row */}
@@ -137,7 +112,7 @@ export default function BattleCard({ battle, onClick }: Props) {
           className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm text-white"
           style={{
             background: `linear-gradient(135deg, ${g1}, ${g2})`,
-            boxShadow: `0 4px 20px ${g1}55`,
+            boxShadow: `0 4px 24px ${g1}55`,
           }}
         >
           {isActive ? '🔥 Голосовать' : '📸 Участвовать'}
