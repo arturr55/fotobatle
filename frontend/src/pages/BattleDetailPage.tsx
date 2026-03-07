@@ -55,10 +55,16 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
   const handleSubmit = async () => {
     if (!selectedFile) return
     try {
-      await enterBattle.mutateAsync({ battleId, photo: selectedFile })
+      const result = await enterBattle.mutateAsync({ battleId, photo: selectedFile })
       setPreview(null)
       setSelectedFile(null)
-      WebApp.showAlert('Ты в батле! Голосование началось.')
+      const achievements = (result as any)?.achievements
+      if (achievements?.length > 0) {
+        const msg = achievements.map((a: any) => `🏆 ${a.label} +${a.bonus} бонусных голоса`).join('\n')
+        WebApp.showAlert(`Ты в батле!\n\n${msg}`)
+      } else {
+        WebApp.showAlert('Ты в батле! Голосование началось.')
+      }
     } catch (err: any) {
       WebApp.showAlert(err.response?.data?.error || 'Ошибка')
     }

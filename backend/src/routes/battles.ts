@@ -2,6 +2,7 @@ import { Router, Response } from 'express'
 import { authMiddleware, adminOnly, AuthRequest } from '../middleware/auth'
 import prisma from '../db'
 import { finishBattle } from '../services/battleService'
+import { checkAchievements } from '../services/achievementService'
 
 const router = Router()
 
@@ -208,7 +209,9 @@ router.post('/:id/enter', async (req: AuthRequest, res: Response) => {
     })
   ])
 
-  res.json({ success: true })
+  // Check achievements after entering
+  const newAchievements = await checkAchievements(req.user!.id)
+  res.json({ success: true, achievements: newAchievements })
 })
 
 // Leave battle (refund if no votes on entry)
