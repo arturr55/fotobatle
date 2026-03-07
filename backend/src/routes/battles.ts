@@ -132,7 +132,21 @@ router.post('/entries/:entryId/vote', async (req: AuthRequest, res: Response) =>
   const existing = await prisma.vote.findUnique({
     where: { entryId_userId: { entryId, userId: req.user!.id } }
   })
-  if (existing) return res.status(400).json({ error: 'Already voted' })
+
+  if (existing) {
+    // Allow re-vote only with bonus votes
+    const voter = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { bonusVotes: true } })
+    if (!voter || voter.bonusVotes <= 0) return res.status(400).json({ error: 'Already voted' })
+
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: req.user!.id }, data: { bonusVotes: { decrement: 1 } } }),
+      prisma.battleEntry.update({
+        where: { id: entryId },
+        data: { score: { increment: points } }
+      })
+    ])
+    return res.json({ success: true, points, bonusUsed: true })
+  }
 
   await prisma.$transaction([
     prisma.vote.create({

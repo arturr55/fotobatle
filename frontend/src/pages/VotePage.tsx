@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
 import { useBattles, useVoteEntry, useVote } from '../hooks/useBattles'
+import { useUser } from '../hooks/useUser'
 import { mediaUrl } from '../api/client'
 
 const REACTIONS = [
@@ -13,10 +14,11 @@ const REACTIONS = [
 const GLASS_BG = 'rgba(8,8,18,0.96)'
 const SWIPE_THRESHOLD = 80
 
-function VoteCard({ battleId }: { battleId: number }) {
+function VoteCard({ battleId, bonusVotes }: { battleId: number; bonusVotes: number }) {
   const { data: entry, isLoading, refetch } = useVoteEntry(battleId)
   const vote = useVote(battleId)
   const [voted, setVoted] = useState<string | null>(null)
+  const [bonusUsed, setBonusUsed] = useState(false)
 
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-200, 200], [-12, 12])
@@ -27,11 +29,15 @@ function VoteCard({ battleId }: { battleId: number }) {
   const handleVote = async (reaction: string) => {
     if (!entry || voted) return
     setVoted(reaction)
-    await vote.mutateAsync({ entryId: entry.id, reaction })
+    try {
+      const result = await vote.mutateAsync({ entryId: entry.id, reaction })
+      if ((result as any)?.bonusUsed) setBonusUsed(true)
+    } catch {}
     setTimeout(() => {
       setVoted(null)
+      setBonusUsed(false)
       refetch()
-    }, 800)
+    }, 900)
   }
 
   const handleDragEnd = async (_: unknown, info: { offset: { x: number } }) => {
@@ -164,13 +170,23 @@ function VoteCard({ battleId }: { battleId: number }) {
             style={{ background: GLASS_BG, backdropFilter: 'blur(24px)' }}
           >
             <div className="mb-4">
-              <h2 className="text-white font-extrabold text-2xl leading-tight">
-                {entry.user?.firstName || 'Участник'}
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-white font-extrabold text-2xl leading-tight">
+                  {entry.user?.firstName || 'Участник'}
+                </h2>
+                {bonusVotes > 0 && (
+                  <span className="text-xs px-2 py-1 rounded-full font-semibold"
+                    style={{ background: 'rgba(254,123,17,0.25)', color: '#fe7b11' }}>
+                    🎯 {bonusVotes} бонус
+                  </span>
+                )}
+              </div>
               {entry.user?.username && (
                 <p className="text-white/40 text-sm">@{entry.user.username}</p>
               )}
-              <p className="text-white/30 text-xs mt-1">← пропустить · свайп вправо = 🔥 →</p>
+              <p className="text-white/30 text-xs mt-1">
+                {bonusUsed ? '✨ Бонусный голос использован!' : '← пропустить · свайп вправо = 🔥 →'}
+              </p>
             </div>
 
             {/* Reaction buttons */}
@@ -205,6 +221,7 @@ function VoteCard({ battleId }: { battleId: number }) {
 
 export default function VotePage() {
   const { data: battles } = useBattles()
+  const { data: user } = useUser()
   const [selectedBattleId, setSelectedBattleId] = useState<number | null>(null)
 
   const activeBattles = battles?.filter(b => b.status === 'ACTIVE') || []
@@ -218,7 +235,7 @@ export default function VotePage() {
       style={{ height: 'calc(100dvh - 80px)', background: '#fcfeff' }}
     >
       {currentBattle ? (
-        <VoteCard battleId={currentBattle.id} />
+        <VoteCard battleId={currentBattle.id} bonusVotes={(user as any)?.bonusVotes ?? 0} />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
           <span className="text-6xl mb-4">🔥</span>
