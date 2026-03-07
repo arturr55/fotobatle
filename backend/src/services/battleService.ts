@@ -1,4 +1,5 @@
 import prisma from '../db'
+import { sendNotification } from './notifyService'
 
 const PRIZE_DISTRIBUTION = [0.50, 0.25, 0.15] // 1st, 2nd, 3rd place
 const PLATFORM_CUT = 0.10 // 10%
@@ -60,10 +61,28 @@ export async function finishBattle(battleId: number) {
     ])
   }
 
-  // Set rank for remaining entries, then delete their rows (free base64 photo data)
+  // Notify winners
+  for (let i = 0; i < winners.length; i++) {
+    const entry = winners[i]
+    const prize = Math.floor(distributablePool * (PRIZE_DISTRIBUTION[i] || 0))
+    const medals = ['🥇', '🥈', '🥉']
+    const user = await prisma.user.findUnique({ where: { id: entry.userId }, select: { telegramId: true } })
+    if (user) {
+      await sendNotification(user.telegramId,
+        `${medals[i]} <b>Батл "${battle.title}" завершён!</b>\n\nТы занял ${i + 1} место и получил <b>${prize} монет</b>! 🎉`)
+    }
+  }
+
+  // Notify non-winners (entries after top-3)
   const loserIds: number[] = []
   for (let i = 3; i < battle.entries.length; i++) {
-    loserIds.push(battle.entries[i].id)
+    const entry = battle.entries[i]
+    loserIds.push(entry.id)
+    const user = await prisma.user.findUnique({ where: { id: entry.userId }, select: { telegramId: true } })
+    if (user) {
+      await sendNotification(user.telegramId,
+        `🏁 <b>Батл "${battle.title}" завершён.</b>\n\nТы не попал в топ-3 в этот раз. Попробуй снова в следующем батле!`)
+    }
   }
 
   if (loserIds.length > 0) {
@@ -94,11 +113,21 @@ export async function checkAndFinishExpiredBattles() {
 export async function activateUpcomingBattles() {
   const now = new Date()
 
-  await prisma.battle.updateMany({
-    where: {
-      status: 'UPCOMING',
-      startsAt: { lte: now }
-    },
-    data: { status: 'ACTIVE' }
+  const battlesToActivate = await prisma.battle.findMany({
+    where: { status: 'UPCOMING', startsAt: { lte: now } },
+    include: {
+      entries: {
+        include: { user: { select: { telegramId: true } } }
+      }
+    }
   })
+
+  for (const battle of battlesToActivate) {
+    await prisma.battle.update({ where: { id: battle.id }, data: { status: 'ACTIVE' } })
+
+    for (const entry of battle.entries) {
+      await sendNotification(entry.user.telegramId,
+        `📸 <b>Батл "${battle.title}" начался!</b>\n\nГолосование открыто — теперь другие оценивают твоё фото. Поделись ссылкой, чтобы получить больше голосов!`)
+    }
+  }
 }
