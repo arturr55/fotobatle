@@ -15,25 +15,24 @@ export default function BattlesPage({ onSelectBattle }: Props) {
     <div className="flex flex-col pb-4">
       {/* Hero */}
       <div className="px-5 pt-10 pb-8" style={{ background: '#1a162a' }}>
-        {/* Custom camera + lightning icon */}
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3">
-          {/* Camera body */}
-          <rect x="5" y="15" width="38" height="26" rx="5" stroke="white" strokeWidth="2.5" />
-          {/* Camera bump */}
-          <path d="M17 15V11C17 9.9 17.9 9 19 9H29C30.1 9 31 9.9 31 11V15" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-          {/* Lens circle */}
-          <circle cx="24" cy="28" r="8" stroke="white" strokeWidth="2.5" />
-          {/* Lightning bolt inside lens */}
-          <path d="M26 22L21 28H24.5L22 34L27 28H23.5L26 22Z" fill="#fe7b11" />
-          {/* Small circle top-left (flash indicator) */}
-          <circle cx="11" cy="22" r="2" fill="white" />
-        </svg>
+        <div className="flex items-center gap-4">
+          {/* Custom camera + lightning icon */}
+          <svg width="52" height="52" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+            <rect x="5" y="15" width="38" height="26" rx="5" stroke="white" strokeWidth="2.5" />
+            <path d="M17 15V11C17 9.9 17.9 9 19 9H29C30.1 9 31 9.9 31 11V15" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="24" cy="28" r="8" stroke="white" strokeWidth="2.5" />
+            <path d="M26 22L21 28H24.5L22 34L27 28H23.5L26 22Z" fill="#fe7b11" />
+            <circle cx="11" cy="22" r="2" fill="white" />
+          </svg>
 
-        <h1 style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 1.05 }}>
-          <span className="block text-white" style={{ fontSize: '2.6rem' }}>Фото</span>
-          <span className="block" style={{ fontSize: '2.6rem', color: '#fe7b11' }}>Батл</span>
-        </h1>
-        <p className="text-white/50 text-sm mt-2">Соревнуйся и выигрывай звёзды</p>
+          <div>
+            <h1 style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 1.05 }}>
+              <span className="text-white" style={{ fontSize: '2.6rem' }}>Фото </span>
+              <span style={{ fontSize: '2.6rem', color: '#fe7b11' }}>Батл</span>
+            </h1>
+            <p className="text-white/50 text-sm">Соревнуйся и выигрывай звёзды</p>
+          </div>
+        </div>
       </div>
 
       {isLoading && (
