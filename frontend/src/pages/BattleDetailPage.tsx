@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { useBattle, useEnterBattle } from '../hooks/useBattles'
 import { useUser } from '../hooks/useUser'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Users, Camera, LogOut, Clock, Share2, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Star, Users, Camera, LogOut, Clock, Share2, ExternalLink, Trophy } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 import api, { mediaUrl } from '../api/client'
 
@@ -85,11 +85,20 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
 
   const entries = battle.entries || []
 
+  const prizeConfig: any[] = (battle as any).prizeConfig || []
+  const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
+
+  const prizeLabel = (p: any) => {
+    if (battle.prizeType === 'POOL_PERCENT') return `${p.percent}% пула`
+    if (battle.prizeType === 'FIXED') return `${p.amount} BS⭐`
+    return p.description || 'Подарок'
+  }
+
   return (
     <div className="flex flex-col pb-24" style={{ background: '#fcfeff', minHeight: '100vh' }}>
       {/* Header */}
-      <div className="px-4 pt-6 pb-6" style={{ background: DARK }}>
-        <div className="flex items-center gap-3 mb-1">
+      <div className="px-4 pt-6 pb-5" style={{ background: DARK }}>
+        <div className="flex items-center gap-3 mb-3">
           <button
             onClick={onBack}
             className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
@@ -97,40 +106,65 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
           >
             <ArrowLeft size={18} color="white" />
           </button>
-          <h1 className="text-lg font-bold text-white flex-1 truncate"
-            style={{ fontFamily: "'Oswald', sans-serif", fontSize: '1.4rem' }}>
+          <h1 className="text-white flex-1"
+            style={{ fontFamily: "'Oswald', sans-serif", fontSize: '1.5rem', lineHeight: 1.1 }}>
             {battle.title}
           </h1>
         </div>
+        {battle.description && (
+          <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.65)', paddingLeft: '0.25rem' }}>
+            {battle.description}
+          </p>
+        )}
       </div>
 
-      {/* Stats */}
-      <div className="flex gap-3 px-4 pt-4 mb-4">
-        <div className="flex-1 rounded-2xl p-3 flex items-center gap-2"
+      {/* Stats row */}
+      <div className="flex gap-2 px-4 pt-4 mb-3">
+        <div className="flex-1 rounded-2xl p-3 text-center"
           style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-          <Star size={16} fill="#fe7b11" color="#fe7b11" />
-          <div>
-            <p className="font-bold text-sm" style={{ color: '#fe7b11' }}>{battle.prizePool}</p>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Призовой пул BS⭐</p>
-          </div>
+          <p className="font-bold text-base" style={{ color: '#fe7b11' }}>{battle.prizePool}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(26,22,42,0.45)' }}>Пул BS⭐</p>
         </div>
-        <div className="flex-1 rounded-2xl p-3 flex items-center gap-2"
+        <div className="flex-1 rounded-2xl p-3 text-center"
           style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-          <Users size={16} style={{ color: DARK }} />
-          <div>
-            <p className="font-bold text-sm" style={{ color: DARK }}>{battle._count?.entries || 0}</p>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Участников</p>
-          </div>
+          <p className="font-bold text-base" style={{ color: DARK }}>{battle._count?.entries || 0}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(26,22,42,0.45)' }}>Участников</p>
         </div>
-        <div className="flex-1 rounded-2xl p-3 flex items-center gap-2"
+        <div className="flex-1 rounded-2xl p-3 text-center"
           style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-          <Star size={16} style={{ color: 'rgba(26,22,42,0.4)' }} />
-          <div>
-            <p className="font-bold text-sm" style={{ color: DARK }}>{battle.entryFee}</p>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Взнос BS⭐</p>
-          </div>
+          <p className="font-bold text-base" style={{ color: DARK }}>{battle.entryFee > 0 ? `${battle.entryFee} BS⭐` : 'Бесплатно'}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(26,22,42,0.45)' }}>Взнос</p>
         </div>
       </div>
+
+      {/* Prizes block */}
+      {prizeConfig.length > 0 && (
+        <div className="mx-4 mb-3 rounded-2xl overflow-hidden"
+          style={{ background: DARK, border: '1px solid rgba(254,123,17,0.2)' }}>
+          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <Trophy size={15} color="#fe7b11" />
+            <span className="text-sm font-semibold text-white">Призовые места</span>
+            <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ background: 'rgba(254,123,17,0.2)', color: '#fe7b11' }}>
+              {prizeConfig.length} {prizeConfig.length === 1 ? 'место' : prizeConfig.length < 5 ? 'места' : 'мест'}
+            </span>
+          </div>
+          <div className="px-4 py-2">
+            {prizeConfig.map((p: any, i: number) => (
+              <div key={i} className="flex items-center justify-between py-2.5"
+                style={{ borderBottom: i < prizeConfig.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg w-6 text-center">{medals[i] || `#${i + 1}`}</span>
+                  <span className="text-sm text-white/70">{i + 1} место</span>
+                </div>
+                <span className="text-sm font-bold" style={{ color: i === 0 ? '#fe7b11' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'rgba(255,255,255,0.6)' }}>
+                  {prizeLabel(p)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* My entry */}
       {myEntry && (
