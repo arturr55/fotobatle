@@ -36,9 +36,9 @@ export default function BottomNav({ active, onChange, isAdmin }: Props) {
             >
               <Icon
                 size={22}
-                className={isActive ? (isAdminTab ? 'text-yellow-400' : 'text-[#fe7b11]') : 'text-white/40'}
+                className={isActive ? (isAdminTab ? 'text-yellow-400' : 'text-[#fe7b11]') : 'text-white/65'}
               />
-              <span className={`text-[10px] font-medium ${isActive ? (isAdminTab ? 'text-yellow-400' : 'text-[#fe7b11]') : 'text-white/40'}`}>
+              <span className={`text-[10px] font-medium ${isActive ? (isAdminTab ? 'text-yellow-400' : 'text-[#fe7b11]') : 'text-white/65'}`}>
                 {tab.label}
               </span>
             </button>
