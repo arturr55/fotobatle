@@ -6,7 +6,6 @@ interface Props {
   onClick: () => void
 }
 
-// NICOLAI-inspired: violet, fuchsia, cyan neon palette
 const CATEGORY_GRADIENTS: Record<string, [string, string]> = {
   look:      ['#c026d3', '#7c3aed'],
   smile:     ['#f97316', '#ec4899'],
@@ -16,7 +15,8 @@ const CATEGORY_GRADIENTS: Record<string, [string, string]> = {
   landscape: ['#10b981', '#06b6d4'],
 }
 
-const CARD_BG = '#0d0d1f'
+const DARK = '#1a162a'
+const LIGHT = '#fcfeff'
 
 function timeLeft(endsAt: string): string {
   const diff = new Date(endsAt).getTime() - Date.now()
@@ -36,34 +36,32 @@ export default function BattleCard({ battle, onClick }: Props) {
     <div
       onClick={onClick}
       className="relative overflow-hidden rounded-3xl cursor-pointer active:scale-95 transition-transform"
-      style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ border: '1px solid rgba(26,22,42,0.1)', background: LIGHT }}
     >
-      {/* Gradient top zone — aurora glow, no emoji */}
+      {/* Dark top zone */}
       <div
         className="relative overflow-hidden"
         style={{
           height: '110px',
-          // Fades seamlessly into CARD_BG at bottom — no wave needed
-          background: `linear-gradient(160deg, ${g1}55 0%, ${g2}45 55%, ${CARD_BG} 100%)`,
+          background: DARK,
         }}
       >
-        {/* Glow orb left */}
+        {/* Aurora glow orbs */}
         <div
           className="absolute rounded-full pointer-events-none"
           style={{
-            width: 140, height: 140,
-            background: `radial-gradient(circle, ${g1}70, transparent 70%)`,
-            top: '50%', left: '20%',
+            width: 150, height: 150,
+            background: `radial-gradient(circle, ${g1}60, transparent 70%)`,
+            top: '50%', left: '25%',
             transform: 'translate(-50%, -50%)',
           }}
         />
-        {/* Glow orb right-top */}
         <div
           className="absolute rounded-full pointer-events-none"
           style={{
-            width: 100, height: 100,
-            background: `radial-gradient(circle, ${g2}65, transparent 70%)`,
-            top: '-20%', right: '15%',
+            width: 110, height: 110,
+            background: `radial-gradient(circle, ${g2}55, transparent 70%)`,
+            top: '-20%', right: '10%',
           }}
         />
 
@@ -71,7 +69,10 @@ export default function BattleCard({ battle, onClick }: Props) {
         <div className="absolute top-3 left-3">
           <span
             className="text-xs px-2.5 py-1 rounded-full font-semibold text-white"
-            style={{ background: 'rgba(20,167,234,0.85)', border: '1px solid rgba(20,167,234,0.6)' }}
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
           >
             {isActive ? '● Активный' : '○ Скоро'}
           </span>
@@ -80,29 +81,52 @@ export default function BattleCard({ battle, onClick }: Props) {
         {/* Prize pool badge */}
         <div
           className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full"
-          style={{ background: 'rgba(234,179,8,0.18)', border: '1px solid rgba(234,179,8,0.35)' }}
+          style={{
+            background: 'rgba(234,179,8,0.2)',
+            border: '1px solid rgba(234,179,8,0.4)',
+          }}
         >
           <Star size={11} fill="currentColor" className="text-yellow-400" />
           <span className="text-yellow-400 font-bold text-xs">{battle.prizePool}</span>
         </div>
       </div>
 
-      {/* Info zone — dark navy background */}
-      <div className="px-4 pb-4 pt-3 rounded-b-3xl" style={{ background: '#022f82' }}>
-        <h3 className="text-white font-bold text-lg leading-tight mb-3">{battle.title}</h3>
+      {/* Drip SVG — dark drops into white info zone */}
+      <svg
+        viewBox="0 0 390 40"
+        width="100%"
+        height="40"
+        preserveAspectRatio="none"
+        style={{ display: 'block', marginTop: -1, background: LIGHT }}
+      >
+        <path
+          d="M0,10 H70
+             C70,30 93,40 108,40 C123,40 148,30 148,10
+             H240
+             C240,28 263,36 278,36 C293,36 318,28 318,10
+             H390 V0 H0 Z"
+          fill={DARK}
+        />
+      </svg>
+
+      {/* White info zone */}
+      <div className="px-4 pb-4 pt-1" style={{ background: LIGHT }}>
+        <h3 className="font-bold text-lg leading-tight mb-3" style={{ color: DARK }}>
+          {battle.title}
+        </h3>
 
         {/* Stats row */}
-        <div className="flex items-center gap-3 mb-4 text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+        <div className="flex items-center gap-3 mb-4 text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>
           <div className="flex items-center gap-1.5">
             <Users size={12} />
             <span>{battle._count?.entries || 0} уч.</span>
           </div>
-          <div className="w-px h-3" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          <div className="w-px h-3" style={{ background: 'rgba(26,22,42,0.15)' }} />
           <div className="flex items-center gap-1.5">
             <Timer size={12} />
             <span>{isActive ? timeLeft(battle.endsAt) : 'Скоро'}</span>
           </div>
-          <div className="w-px h-3" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          <div className="w-px h-3" style={{ background: 'rgba(26,22,42,0.15)' }} />
           <span>{battle.entryFee} монет</span>
         </div>
 
@@ -111,7 +135,7 @@ export default function BattleCard({ battle, onClick }: Props) {
           className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm text-white"
           style={{
             background: `linear-gradient(135deg, ${g1}, ${g2})`,
-            boxShadow: `0 4px 24px ${g1}55`,
+            boxShadow: `0 4px 20px ${g1}45`,
           }}
         >
           {isActive ? '🔥 Голосовать' : '📸 Участвовать'}

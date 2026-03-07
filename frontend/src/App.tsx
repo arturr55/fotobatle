@@ -23,14 +23,14 @@ export default function App() {
 
   if (selectedBattleId) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0f0f0f' }}>
+      <div style={{ minHeight: '100vh', background: '#fcfeff' }}>
         <BattleDetailPage battleId={selectedBattleId} onBack={() => setSelectedBattleId(null)} />
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f0f0f' }}>
+    <div style={{ minHeight: '100vh', background: '#fcfeff' }}>
       <div className="pb-20">
         {tab === 'battles' && <BattlesPage onSelectBattle={setSelectedBattleId} />}
         {tab === 'vote' && <VotePage />}
