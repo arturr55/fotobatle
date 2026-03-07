@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
 import { useBattles, useVoteEntry, useVote } from '../hooks/useBattles'
 import { mediaUrl } from '../api/client'
 
@@ -11,11 +11,18 @@ const REACTIONS = [
 ]
 
 const GLASS_BG = 'rgba(8,8,18,0.96)'
+const SWIPE_THRESHOLD = 80
 
 function VoteCard({ battleId }: { battleId: number }) {
   const { data: entry, isLoading, refetch } = useVoteEntry(battleId)
   const vote = useVote(battleId)
   const [voted, setVoted] = useState<string | null>(null)
+
+  const x = useMotionValue(0)
+  const rotate = useTransform(x, [-200, 200], [-12, 12])
+  const fireOpacity = useTransform(x, [30, SWIPE_THRESHOLD], [0, 1])
+  const skipOpacity = useTransform(x, [-SWIPE_THRESHOLD, -30], [1, 0])
+  const controls = useAnimation()
 
   const handleVote = async (reaction: string) => {
     if (!entry || voted) return
@@ -27,10 +34,29 @@ function VoteCard({ battleId }: { battleId: number }) {
     }, 800)
   }
 
+  const handleDragEnd = async (_: unknown, info: { offset: { x: number } }) => {
+    const offsetX = info.offset.x
+    if (offsetX > SWIPE_THRESHOLD) {
+      // Swipe right → fire
+      await controls.start({ x: 600, opacity: 0, transition: { duration: 0.3 } })
+      x.set(0)
+      await controls.start({ x: 0, opacity: 1, transition: { duration: 0 } })
+      handleVote('fire')
+    } else if (offsetX < -SWIPE_THRESHOLD) {
+      // Swipe left → skip
+      await controls.start({ x: -600, opacity: 0, transition: { duration: 0.3 } })
+      x.set(0)
+      await controls.start({ x: 0, opacity: 1, transition: { duration: 0 } })
+      refetch()
+    } else {
+      controls.start({ x: 0, transition: { type: 'spring', stiffness: 300, damping: 20 } })
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#fe7b11', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -38,7 +64,6 @@ function VoteCard({ battleId }: { battleId: number }) {
   if (!entry) {
     return (
       <div className="absolute inset-0" style={{ background: '#fcfeff' }}>
-        {/* Dark bottom sheet — half screen */}
         <div
           className="absolute bottom-0 left-0 right-0 rounded-t-3xl flex flex-col items-center justify-center px-8 text-center"
           style={{ height: '52%', background: '#1a162a' }}
@@ -57,19 +82,25 @@ function VoteCard({ battleId }: { battleId: number }) {
       <motion.div
         key={entry.id}
         initial={{ opacity: 0, scale: 1.04 }}
-        animate={{ opacity: 1, scale: 1 }}
+        animate={controls}
         exit={{ opacity: 0, scale: 0.96 }}
         transition={{ duration: 0.3 }}
-        className="absolute inset-0"
+        style={{ x, rotate }}
+        drag="x"
+        dragElastic={0.7}
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={handleDragEnd}
+        className="absolute inset-0 cursor-grab active:cursor-grabbing"
       >
         {/* Fullscreen photo */}
         <img
           src={mediaUrl(entry.photoUrl)}
           alt="battle entry"
           className="absolute inset-0 w-full h-full object-cover"
+          draggable={false}
         />
 
-        {/* Gradient overlay — dark at top and bottom, transparent in middle */}
+        {/* Gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -77,6 +108,26 @@ function VoteCard({ battleId }: { battleId: number }) {
               'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 28%, transparent 52%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.88) 100%)',
           }}
         />
+
+        {/* Swipe right indicator — 🔥 */}
+        <motion.div
+          style={{ opacity: fireOpacity }}
+          className="absolute top-24 left-6 z-20 pointer-events-none"
+        >
+          <div className="px-4 py-2 rounded-2xl border-4 border-[#fe7b11] rotate-[-15deg]">
+            <span className="text-[#fe7b11] font-black text-2xl tracking-wider">ОГОНЬ 🔥</span>
+          </div>
+        </motion.div>
+
+        {/* Swipe left indicator — skip */}
+        <motion.div
+          style={{ opacity: skipOpacity }}
+          className="absolute top-24 right-6 z-20 pointer-events-none"
+        >
+          <div className="px-4 py-2 rounded-2xl border-4 border-white/60 rotate-[15deg]">
+            <span className="text-white/80 font-black text-2xl tracking-wider">ПРОПУСК ⏭</span>
+          </div>
+        </motion.div>
 
         {/* Vote feedback emoji */}
         {voted && (
@@ -96,7 +147,6 @@ function VoteCard({ battleId }: { battleId: number }) {
 
         {/* Bottom glass panel */}
         <div className="absolute bottom-0 left-0 right-0 z-10">
-          {/* Wavy top edge of glass panel */}
           <svg
             viewBox="0 0 390 44"
             preserveAspectRatio="none"
@@ -109,19 +159,18 @@ function VoteCard({ battleId }: { battleId: number }) {
             />
           </svg>
 
-          {/* Glass content */}
           <div
             className="px-5 pt-1 pb-6"
             style={{ background: GLASS_BG, backdropFilter: 'blur(24px)' }}
           >
-            {/* User info */}
-            <div className="mb-5">
+            <div className="mb-4">
               <h2 className="text-white font-extrabold text-2xl leading-tight">
                 {entry.user?.firstName || 'Участник'}
               </h2>
               {entry.user?.username && (
                 <p className="text-white/40 text-sm">@{entry.user.username}</p>
               )}
+              <p className="text-white/30 text-xs mt-1">← пропустить · свайп вправо = 🔥 →</p>
             </div>
 
             {/* Reaction buttons */}
