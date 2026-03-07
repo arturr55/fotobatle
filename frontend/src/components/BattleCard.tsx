@@ -53,11 +53,23 @@ export default function BattleCard({ battle, onClick }: Props) {
 
         {/* Prize pool badge */}
         <div
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
           style={{ background: 'rgba(254,123,17,0.18)', border: '1px solid rgba(254,123,17,0.35)' }}
         >
-          <Star size={11} fill="#fe7b11" color="#fe7b11" />
-          <span className="font-bold text-xs" style={{ color: '#fe7b11' }}>{battle.prizePool}</span>
+          {battle.prizeType === 'POOL_PERCENT' ? (
+            <>
+              <Star size={11} fill="#fe7b11" color="#fe7b11" />
+              <span className="font-bold text-xs" style={{ color: '#fe7b11' }}>{battle.prizePool}</span>
+            </>
+          ) : (
+            (battle.prizeConfig || []).map((p: any, i: number) => (
+              <span key={i} className="flex items-center gap-0.5">
+                {i > 0 && <span className="font-bold text-xs" style={{ color: 'rgba(254,123,17,0.4)' }}>·</span>}
+                <Star size={11} fill="#fe7b11" color="#fe7b11" />
+                <span className="font-bold text-xs" style={{ color: '#fe7b11' }}>{p.amount}</span>
+              </span>
+            ))
+          )}
         </div>
       </div>
 
