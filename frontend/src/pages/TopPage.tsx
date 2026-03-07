@@ -110,9 +110,9 @@ function WinnersSection() {
                   <p className="font-medium text-sm truncate" style={{ color: DARK }}>{entry.user?.firstName || 'Участник'}</p>
                   {entry.user?.username && <p className="text-xs" style={{ color: 'rgba(26,22,42,0.4)' }}>@{entry.user.username}</p>}
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
-                    набрал(а) <b style={{ color: DARK }}>{entry.score}</b> очков
+                <div className="flex flex-col items-end gap-1" style={{ marginTop: -2 }}>
+                  <span className="text-sm" style={{ color: 'rgba(26,22,42,0.55)' }}>
+                    набрал(а) <b style={{ color: DARK, fontSize: '0.95rem' }}>{entry.score}</b> очков
                   </span>
                   {entry.prize != null && entry.prize > 0 && (
                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
