@@ -76,8 +76,19 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
     queryFn: () => api.get('/promotions/active').then(r => r.data),
   })
 
+  // Convert datetime-local value to ISO with local timezone offset
+  const toISO = (local: string) => {
+    if (!local) return local
+    const d = new Date(local)
+    return d.toISOString()
+  }
+
   const create = useMutation({
-    mutationFn: () => api.post('/battles', form).then(r => r.data),
+    mutationFn: () => api.post('/battles', {
+      ...form,
+      startsAt: toISO(form.startsAt),
+      endsAt: toISO(form.endsAt),
+    }).then(r => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battles'] })
       queryClient.invalidateQueries({ queryKey: ['admin-battles'] })
@@ -515,7 +526,11 @@ function AdminBattles() {
                 </div>
               </div>
               <button
-                onClick={() => edit.mutate({ id: b.id, data: editForm })}
+                onClick={() => edit.mutate({ id: b.id, data: {
+                ...editForm,
+                startsAt: new Date(editForm.startsAt).toISOString(),
+                endsAt: new Date(editForm.endsAt).toISOString(),
+              } })}
                 disabled={edit.isPending}
                 className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40"
                 style={{ background: '#fe7b11', border: 'none', cursor: 'pointer' }}>
