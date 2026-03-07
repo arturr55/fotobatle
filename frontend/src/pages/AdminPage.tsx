@@ -84,11 +84,17 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
   }
 
   const create = useMutation({
-    mutationFn: () => api.post('/battles', {
-      ...form,
-      startsAt: toISO(form.startsAt),
-      endsAt: toISO(form.endsAt),
-    }).then(r => r.data),
+    mutationFn: () => {
+      const autoSponsorPool = form.prizeType === 'FIXED' && form.entryFee === 0
+        ? form.prizeConfig.reduce((sum, p) => sum + (p.amount || 0), 0)
+        : form.sponsorPool
+      return api.post('/battles', {
+        ...form,
+        sponsorPool: autoSponsorPool,
+        startsAt: toISO(form.startsAt),
+        endsAt: toISO(form.endsAt),
+      }).then(r => r.data)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battles'] })
       queryClient.invalidateQueries({ queryKey: ['admin-battles'] })
@@ -177,12 +183,14 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* Sponsor pool for FIXED */}
+      {/* Auto sponsor pool for FIXED with no entry fee */}
       {form.prizeType === 'FIXED' && form.entryFee === 0 && (
-        <div>
-          <label style={labelStyle}>Бюджет приза BS⭐ (спонсор)</label>
-          <input type="number" min={0} style={inputStyle}
-            value={form.sponsorPool} onChange={e => set('sponsorPool', parseInt(e.target.value) || 0)} />
+        <div className="flex items-center justify-between px-3 py-2 rounded-xl"
+          style={{ background: 'rgba(254,123,17,0.08)', border: '1px solid rgba(254,123,17,0.2)' }}>
+          <span className="text-xs" style={{ color: 'rgba(26,22,42,0.6)' }}>Бюджет призов (авто)</span>
+          <span className="font-bold text-sm" style={{ color: '#fe7b11' }}>
+            {form.prizeConfig.reduce((sum, p) => sum + (p.amount || 0), 0)} BS⭐
+          </span>
         </div>
       )}
 
