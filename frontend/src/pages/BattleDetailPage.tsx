@@ -72,7 +72,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
     WebApp.openTelegramLink(shareUrl)
   }
 
-  const top3 = battle.entries?.slice(0, 3) || []
+  const entries = battle.entries || []
 
   return (
     <div className="flex flex-col pb-24" style={{ background: '#fcfeff', minHeight: '100vh' }}>
@@ -227,25 +227,30 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
         </div>
       )}
 
-      {/* Participants */}
-      {top3.length > 0 && (
+      {/* Participants grid */}
+      {entries.length > 0 && (
         <div className="px-4">
           <h2 className="text-xs font-semibold uppercase tracking-wider mb-3"
             style={{ color: 'rgba(26,22,42,0.45)' }}>
-            Участники
+            Участники · {entries.length}
           </h2>
-          <div className="flex flex-col gap-2">
-            {top3.map((entry, i) => (
-              <div key={entry.id} className="flex items-center gap-3 p-3 rounded-2xl"
-                style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-                <span className="text-lg">{['🥇', '🥈', '🥉'][i]}</span>
-                <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
-                  <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
+          <div className="grid grid-cols-2 gap-2">
+            {entries.map((entry, i) => (
+              <div key={entry.id} className="relative rounded-2xl overflow-hidden"
+                style={{ aspectRatio: '3/4' }}>
+                <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover"
+                  style={{ objectPosition: '50% 15%' }} />
+                <div className="absolute inset-0"
+                  style={{ background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.8) 100%)' }} />
+                {i < 3 && (
+                  <span className="absolute top-2 left-2 text-lg">
+                    {['🥇', '🥈', '🥉'][i]}
+                  </span>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 p-2">
+                  <p className="text-white text-xs font-semibold truncate">{entry.user?.firstName}</p>
+                  <p className="text-xs font-bold" style={{ color: '#fe7b11' }}>{entry.score} оч.</p>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: DARK }}>{entry.user?.firstName}</p>
-                </div>
-                <span className="font-bold text-sm" style={{ color: '#fe7b11' }}>{entry.score} очков</span>
               </div>
             ))}
           </div>
