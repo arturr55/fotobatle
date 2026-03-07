@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUser } from '../hooks/useUser'
-import api from '../api/client'
+import api, { mediaUrl } from '../api/client'
 import type { Transaction, WithdrawalRequest } from '../api/client'
-import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle, Users } from 'lucide-react'
+import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle, Users, Camera } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 const DARK = '#1a162a'
@@ -33,6 +33,11 @@ export default function ProfilePage() {
   const [showWithdraw, setShowWithdraw] = useState(false)
   const [showDeposit, setShowDeposit] = useState(false)
   const [depositLoading, setDepositLoading] = useState<number | null>(null)
+
+  const { data: myEntries } = useQuery<any[]>({
+    queryKey: ['my-entries'],
+    queryFn: () => api.get('/users/me/entries').then(r => r.data),
+  })
 
   const { data: transactions } = useQuery<Transaction[]>({
     queryKey: ['transactions'],
@@ -267,6 +272,34 @@ export default function ProfilePage() {
             Поделиться реферальной ссылкой
           </button>
         </div>
+
+        {/* Battle history */}
+        {myEntries && myEntries.length > 0 && (
+          <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Camera size={14} style={{ color: '#fe7b11' }} />
+              <h3 className="text-sm font-semibold" style={{ color: DARK }}>Мои батлы</h3>
+            </div>
+            <div className="flex flex-col gap-2">
+              {myEntries.map(entry => (
+                <div key={entry.id} className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 15%' }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: DARK }}>{entry.battle.title}</p>
+                    <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                      {entry.battle.status === 'FINISHED' ? (
+                        entry.rank ? `${['🥇','🥈','🥉'][entry.rank - 1] || `#${entry.rank}`} место · +${entry.prize ?? 0} монет` : 'Не в топ-3'
+                      ) : entry.battle.status === 'ACTIVE' ? '🔥 Голосование идёт' : '⏳ Скоро старт'}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold flex-shrink-0" style={{ color: '#fe7b11' }}>{entry.score} оч.</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Transactions */}
         <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
