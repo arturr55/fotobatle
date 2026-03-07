@@ -103,7 +103,7 @@ function WinnersSection() {
                 <div className="w-8 h-8 flex items-center justify-center text-lg flex-shrink-0">
                   {i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}
                 </div>
-                <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+                <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                   <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 15%' }} />
                 </div>
                 <div className="flex-1 min-w-0">
