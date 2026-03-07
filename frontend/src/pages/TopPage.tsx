@@ -28,7 +28,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
           <p className="text-white font-bold text-lg">{first.user?.firstName || 'Участник'}</p>
           {first.user?.username && <p className="text-white/60 text-sm">@{first.user.username}</p>}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="text-white/70 text-sm">набрала <b className="text-white">{first.score}</b> очков</span>
+            <span className="text-white/70 text-sm">набрал(а) <b className="text-white">{first.score}</b> очков</span>
             {first.prize ? (
               <span className="text-sm font-bold px-2 py-0.5 rounded-full"
                 style={{ background: 'rgba(254,123,17,0.3)', color: '#fe7b11' }}>
@@ -112,7 +112,7 @@ function WinnersSection() {
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
-                    набрала <b style={{ color: DARK }}>{entry.score}</b> очков
+                    набрал(а) <b style={{ color: DARK }}>{entry.score}</b> очков
                   </span>
                   {entry.prize != null && entry.prize > 0 && (
                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
