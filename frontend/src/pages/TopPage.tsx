@@ -21,7 +21,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
     <div className="flex flex-col gap-3 px-4">
       {/* 1st place */}
       <div className="relative rounded-3xl overflow-hidden" style={{ height: '260px' }}>
-        <img src={mediaUrl(first.photoUrl)} alt="" className="w-full h-full object-cover object-top" />
+        <img src={mediaUrl(first.photoUrl)} alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 15%' }} />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(transparent 40%, rgba(0,0,0,0.85))' }} />
         <div className="absolute top-3 left-3 text-2xl">🥇</div>
         <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -39,7 +39,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
         <div className="grid grid-cols-2 gap-3">
           {rest.slice(0, 2).map((entry, i) => (
             <div key={entry.id} className="relative rounded-2xl overflow-hidden" style={{ height: '180px' }}>
-              <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover object-top" />
+              <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 15%' }} />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(transparent 40%, rgba(0,0,0,0.85))' }} />
               <div className="absolute top-2 left-2 text-xl">{i === 0 ? '🥈' : '🥉'}</div>
               <div className="absolute bottom-0 left-0 right-0 p-2">
@@ -57,7 +57,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
           style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
           <span className="text-sm w-5 text-center font-medium" style={{ color: 'rgba(26,22,42,0.4)' }}>{i + 4}</span>
           <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-            <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover object-top" />
+            <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 15%' }} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm truncate font-medium" style={{ color: DARK }}>{entry.user?.firstName || 'Участник'}</p>
@@ -97,7 +97,7 @@ function WinnersSection() {
                   {i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}
                 </div>
                 <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
-                  <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover object-top" />
+                  <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 15%' }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate" style={{ color: DARK }}>{entry.user?.firstName || 'Участник'}</p>

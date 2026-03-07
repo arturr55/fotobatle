@@ -2,9 +2,12 @@ import { useRef, useState } from 'react'
 import { useBattle, useEnterBattle } from '../hooks/useBattles'
 import { useUser } from '../hooks/useUser'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Users, Camera, LogOut, Clock } from 'lucide-react'
+import { ArrowLeft, Star, Users, Camera, LogOut, Clock, Share2 } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 import api, { mediaUrl } from '../api/client'
+
+const DARK = '#1a162a'
+const CARD = '#dad3cd'
 
 interface Props {
   battleId: number
@@ -32,8 +35,8 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
 
   if (!battle) {
     return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex justify-center py-20" style={{ background: '#fcfeff', minHeight: '100vh' }}>
+        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#fe7b11', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -46,8 +49,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     setSelectedFile(file)
-    const url = URL.createObjectURL(file)
-    setPreview(url)
+    setPreview(URL.createObjectURL(file))
   }
 
   const handleSubmit = async () => {
@@ -62,46 +64,59 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
     }
   }
 
+  const handleShare = (entryId: number) => {
+    const botUsername = import.meta.env.VITE_BOT_USERNAME || 'fotobatle_bot'
+    const link = `https://t.me/${botUsername}?startapp=e${entryId}`
+    const text = `Оцени моё фото в ФотоБатл! 📸🔥`
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`
+    WebApp.openTelegramLink(shareUrl)
+  }
+
   const top3 = battle.entries?.slice(0, 3) || []
 
   return (
-    <div className="flex flex-col pb-24">
+    <div className="flex flex-col pb-24" style={{ background: '#fcfeff', minHeight: '100vh' }}>
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={onBack}
-          className="w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}
-        >
-          <ArrowLeft size={20} className="text-white" />
-        </button>
-        <h1 className="text-lg font-bold text-white flex-1 truncate">{battle.title}</h1>
+      <div className="px-4 pt-6 pb-6" style={{ background: DARK }}>
+        <div className="flex items-center gap-3 mb-1">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(255,255,255,0.12)', border: 'none', cursor: 'pointer' }}
+          >
+            <ArrowLeft size={18} color="white" />
+          </button>
+          <h1 className="text-lg font-bold text-white flex-1 truncate"
+            style={{ fontFamily: "'Oswald', sans-serif", fontSize: '1.4rem' }}>
+            {battle.title}
+          </h1>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="flex gap-3 px-4 mb-4">
-        <div className="flex-1 rounded-xl p-3 flex items-center gap-2"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <Star size={16} className="text-yellow-400" fill="currentColor" />
+      <div className="flex gap-3 px-4 pt-4 mb-4">
+        <div className="flex-1 rounded-2xl p-3 flex items-center gap-2"
+          style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+          <Star size={16} fill="#fe7b11" color="#fe7b11" />
           <div>
-            <p className="text-yellow-400 font-bold text-sm">{battle.prizePool}</p>
-            <p className="text-white/40 text-xs">Призовой пул</p>
+            <p className="font-bold text-sm" style={{ color: '#fe7b11' }}>{battle.prizePool}</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Призовой пул</p>
           </div>
         </div>
-        <div className="flex-1 rounded-xl p-3 flex items-center gap-2"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <Users size={16} className="text-pink-400" />
+        <div className="flex-1 rounded-2xl p-3 flex items-center gap-2"
+          style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+          <Users size={16} style={{ color: DARK }} />
           <div>
-            <p className="text-pink-400 font-bold text-sm">{battle._count?.entries || 0}</p>
-            <p className="text-white/40 text-xs">Участников</p>
+            <p className="font-bold text-sm" style={{ color: DARK }}>{battle._count?.entries || 0}</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Участников</p>
           </div>
         </div>
-        <div className="flex-1 rounded-xl p-3 flex items-center gap-2"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <Star size={16} className="text-white/40" />
+        <div className="flex-1 rounded-2xl p-3 flex items-center gap-2"
+          style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+          <Star size={16} style={{ color: 'rgba(26,22,42,0.4)' }} />
           <div>
-            <p className="text-white font-bold text-sm">{battle.entryFee}</p>
-            <p className="text-white/40 text-xs">Взнос</p>
+            <p className="font-bold text-sm" style={{ color: DARK }}>{battle.entryFee}</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Взнос</p>
           </div>
         </div>
       </div>
@@ -109,41 +124,53 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
       {/* My entry */}
       {myEntry && (
         <div className="mx-4 mb-4 rounded-2xl p-3"
-          style={{ background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)' }}>
-          <div className="flex items-center gap-3">
+          style={{ background: CARD, border: '1px solid rgba(254,123,17,0.3)' }}>
+          <div className="flex items-center gap-3 mb-3">
             <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
               <img src={mediaUrl(myEntry.photoUrl)} alt="" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
-              <p className="text-pink-400 font-semibold text-sm">Ты участвуешь!</p>
-              <p className="text-white/60 text-xs">{myEntry.score} очков · {myEntry.rank ? `#${myEntry.rank}` : 'без ранга'}</p>
+              <p className="font-semibold text-sm" style={{ color: '#fe7b11' }}>Ты участвуешь!</p>
+              <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>
+                {myEntry.score} очков · {myEntry.rank ? `#${myEntry.rank}` : 'без ранга'}
+              </p>
             </div>
             {battle.status === 'UPCOMING' && (
               <button
                 onClick={() => WebApp.showConfirm(
-                  'Выйти из батла? Взнос вернётся только если на твоё фото ещё нет голосов.',
+                  'Выйти из батла? Взнос вернётся только если нет голосов.',
                   (ok) => { if (ok) leaveBattle.mutate() }
                 )}
                 disabled={leaveBattle.isPending}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-white/50 disabled:opacity-40"
-                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium disabled:opacity-40"
+                style={{ background: 'rgba(26,22,42,0.08)', border: 'none', cursor: 'pointer', color: 'rgba(26,22,42,0.6)' }}
               >
                 <LogOut size={13} />
                 Выйти
               </button>
             )}
           </div>
+
+          {/* Share button */}
+          <button
+            onClick={() => handleShare(myEntry.id)}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ background: '#fe7b11', border: 'none', cursor: 'pointer', color: 'white', boxShadow: '0 4px 16px rgba(254,123,17,0.35)' }}
+          >
+            <Share2 size={15} />
+            Поделиться ссылкой на фото
+          </button>
         </div>
       )}
 
-      {/* Active — voting in progress, no new entries */}
+      {/* Active — no new entries */}
       {battle.status === 'ACTIVE' && !myEntry && (
         <div className="mx-4 mb-4 rounded-2xl p-4 flex items-center gap-3"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <Clock size={20} className="text-pink-400 flex-shrink-0" />
+          style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+          <Clock size={20} style={{ color: '#fe7b11', flexShrink: 0 }} />
           <div>
-            <p className="text-white font-semibold text-sm">Голосование идёт</p>
-            <p className="text-white/50 text-xs">Регистрация закрыта — приходи в следующий батл!</p>
+            <p className="font-semibold text-sm" style={{ color: DARK }}>Голосование идёт</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>Регистрация закрыта — приходи в следующий батл!</p>
           </div>
         </div>
       )}
@@ -151,23 +178,17 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
       {/* Enter battle */}
       {canEnter && (
         <div className="mx-4 mb-4 rounded-2xl p-4"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <h2 className="text-white font-semibold mb-3">Участвовать в батле</h2>
+          style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+          <h2 className="font-semibold mb-3" style={{ color: DARK }}>Участвовать в батле</h2>
 
           {!hasBalance && (
-            <p className="text-red-400 text-sm mb-3">
+            <p className="text-red-500 text-sm mb-3">
               Недостаточно монет. Нужно {battle.entryFee}, у тебя {user?.balance || 0}.
             </p>
           )}
 
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            capture="user"
-            onChange={handleFileChange}
-            className="hidden"
-          />
+          <input ref={fileRef} type="file" accept="image/*" capture="user"
+            onChange={handleFileChange} className="hidden" />
 
           {preview ? (
             <div className="flex flex-col gap-3">
@@ -177,8 +198,8 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
               <div className="flex gap-2">
                 <button
                   onClick={() => { setPreview(null); setSelectedFile(null) }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white/60"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+                  style={{ background: 'rgba(26,22,42,0.08)', border: 'none', cursor: 'pointer', color: DARK }}
                 >
                   Сменить фото
                 </button>
@@ -186,44 +207,45 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
                   onClick={handleSubmit}
                   disabled={enterBattle.isPending || !hasBalance}
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
-                  style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', border: 'none', cursor: 'pointer' }}
+                  style={{ background: '#fe7b11', border: 'none', cursor: 'pointer' }}
                 >
                   {enterBattle.isPending ? 'Загрузка...' : `Участвовать (${battle.entryFee} монет)`}
                 </button>
               </div>
             </div>
           ) : (
-            <div className="flex gap-2">
-              <button
-                onClick={() => fileRef.current?.click()}
-                disabled={!hasBalance}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-40 flex items-center justify-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', border: 'none', cursor: hasBalance ? 'pointer' : 'not-allowed' }}
-              >
-                <Camera size={18} />
-                Загрузить фото
-              </button>
-            </div>
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={!hasBalance}
+              className="w-full py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-40 flex items-center justify-center gap-2"
+              style={{ background: '#fe7b11', border: 'none', cursor: hasBalance ? 'pointer' : 'not-allowed' }}
+            >
+              <Camera size={18} />
+              Загрузить фото
+            </button>
           )}
         </div>
       )}
 
-      {/* Top 3 */}
+      {/* Participants */}
       {top3.length > 0 && (
         <div className="px-4">
-          <h2 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Участники</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider mb-3"
+            style={{ color: 'rgba(26,22,42,0.45)' }}>
+            Участники
+          </h2>
           <div className="flex flex-col gap-2">
             {top3.map((entry, i) => (
-              <div key={entry.id} className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div key={entry.id} className="flex items-center gap-3 p-3 rounded-2xl"
+                style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
                 <span className="text-lg">{['🥇', '🥈', '🥉'][i]}</span>
-                <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                   <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">{entry.user?.firstName}</p>
+                  <p className="text-sm font-medium truncate" style={{ color: DARK }}>{entry.user?.firstName}</p>
                 </div>
-                <span className="text-pink-400 font-bold text-sm">{entry.score} очков</span>
+                <span className="font-bold text-sm" style={{ color: '#fe7b11' }}>{entry.score} очков</span>
               </div>
             ))}
           </div>
