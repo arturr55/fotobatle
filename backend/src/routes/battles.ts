@@ -423,16 +423,35 @@ router.get('/:id/suspicious', adminOnly, async (req: AuthRequest, res: Response)
     }
   }
 
+  // Group votes by voter → how many distinct entries each voter voted for in this battle
+  const byVoter: Record<number, Set<number>> = {}
+  for (const vote of votes) {
+    if (!byVoter[vote.user.id]) byVoter[vote.user.id] = new Set()
+    byVoter[vote.user.id].add(vote.entry.id)
+  }
+
+  // For each entry, count how many of its voters voted ONLY for that entry (exclusive voters)
+  const exclusiveByEntry: Record<number, number> = {}
+  for (const vote of votes) {
+    const eid = vote.entry.id
+    if (byVoter[vote.user.id].size === 1) {
+      exclusiveByEntry[eid] = (exclusiveByEntry[eid] || 0) + 1
+    }
+  }
+
   const totalVotes = votes.length
   const suspicious = Object.entries(byEntry).map(([entryId, data]) => {
+    const eid = parseInt(entryId)
     const concentration = totalVotes > 0 ? Math.round(data.votes.length / totalVotes * 100) : 0
+    const exclusiveVoters = exclusiveByEntry[eid] || 0
     return {
-      entryId: parseInt(entryId),
+      entryId: eid,
       entryUser: data.entryUser,
       voteCount: data.votes.length,
       concentration,
       newAccountVotes: data.newAccountVotes,
-      suspicious: concentration >= 60 || data.newAccountVotes >= 3,
+      exclusiveVoters,
+      suspicious: concentration >= 60 || data.newAccountVotes >= 3 || exclusiveVoters >= 3,
       voters: data.votes
     }
   }).sort((a, b) => b.voteCount - a.voteCount)

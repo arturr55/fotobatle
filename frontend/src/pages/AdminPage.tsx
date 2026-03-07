@@ -537,6 +537,9 @@ function AdminBattles() {
                       {e.newAccountVotes > 0 && (
                         <span style={{ color: '#dc2626' }}> · {e.newAccountVotes} новых акк.</span>
                       )}
+                      {e.exclusiveVoters > 0 && (
+                        <span style={{ color: '#dc2626' }}> · {e.exclusiveVoters} голосовали только за него</span>
+                      )}
                     </p>
                   </div>
                   <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
