@@ -88,8 +88,9 @@ export function useEnterBattle() {
       const photoData = await compressImage(photo, username)
       return api.post(`/battles/${battleId}/enter`, { photo: photoData }).then(r => r.data)
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['battles'] })
+      queryClient.invalidateQueries({ queryKey: ['battle', variables.battleId] })
       queryClient.invalidateQueries({ queryKey: ['user'] })
       queryClient.invalidateQueries({ queryKey: ['my-entries'] })
     }
