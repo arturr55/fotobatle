@@ -28,7 +28,11 @@ export interface Battle {
   category: string
   coverUrl: string | null
   entryFee: number
+  minParticipants: number
   prizePool: number
+  sponsorPool: number
+  prizeType: string
+  prizeConfig: any[]
   status: 'UPCOMING' | 'ACTIVE' | 'FINISHED' | 'CANCELLED'
   startsAt: string
   endsAt: string
