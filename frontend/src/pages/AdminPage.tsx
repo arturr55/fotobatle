@@ -76,7 +76,7 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState({
     title: '',
-    description: '',
+    description: CATEGORY_DESCRIPTIONS['look'] || '',
     category: 'look',
     entryFee: 5,
     startsAt: '',
@@ -166,7 +166,7 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
         <label style={labelStyle}>Категория</label>
         <select style={inputStyle} value={form.category} onChange={e => {
           set('category', e.target.value)
-          if (!form.description) set('description', CATEGORY_DESCRIPTIONS[e.target.value] || '')
+          set('description', CATEGORY_DESCRIPTIONS[e.target.value] || '')
         }}>
           {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
