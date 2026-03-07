@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import path from 'path'
 import { checkAndFinishExpiredBattles, activateUpcomingBattles } from './services/battleService'
+import { resetAchievementsIfNewMonth } from './services/achievementService'
 
 import usersRouter from './routes/users'
 import battlesRouter from './routes/battles'
@@ -31,6 +32,7 @@ setInterval(async () => {
   try {
     await activateUpcomingBattles()
     await checkAndFinishExpiredBattles()
+    await resetAchievementsIfNewMonth()
   } catch (err) {
     console.error('Scheduler error:', err)
   }

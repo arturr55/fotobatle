@@ -1,5 +1,24 @@
 import prisma from '../db'
 
+// Track last reset month to avoid double-reset
+let lastResetMonth = -1
+
+export async function resetAchievementsIfNewMonth() {
+  const now = new Date()
+  const currentMonth = now.getFullYear() * 12 + now.getMonth()
+  if (lastResetMonth === currentMonth) return
+  lastResetMonth = currentMonth
+
+  await prisma.user.updateMany({
+    data: {
+      streakDays: 0,
+      lastEntryDate: null,
+      achievements: [],
+    }
+  })
+  console.log(`Monthly achievements reset done (${now.toISOString()})`)
+}
+
 const ACHIEVEMENTS = [
   { id: 'first_battle',  label: 'Первый батл!',          condition: (count: number, _streak: number) => count === 1, bonus: 1 },
   { id: 'streak_2',      label: '2 дня подряд!',          condition: (_count: number, streak: number) => streak >= 2,  bonus: 1 },
