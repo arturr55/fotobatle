@@ -1,6 +1,6 @@
-import { Flame, Trophy, User, Zap, Shield } from 'lucide-react'
+import { Flame, Trophy, User, Zap, Shield, ClipboardList } from 'lucide-react'
 
-type Tab = 'battles' | 'vote' | 'top' | 'profile' | 'admin'
+type Tab = 'battles' | 'vote' | 'tasks' | 'top' | 'profile' | 'admin'
 
 interface Props {
   active: Tab
@@ -11,6 +11,7 @@ interface Props {
 const baseTabs = [
   { id: 'battles' as Tab, icon: Zap, label: 'Батлы' },
   { id: 'vote' as Tab, icon: Flame, label: 'Голосовать' },
+  { id: 'tasks' as Tab, icon: ClipboardList, label: 'Задания' },
   { id: 'top' as Tab, icon: Trophy, label: 'Топ' },
   { id: 'profile' as Tab, icon: User, label: 'Профиль' },
 ]
@@ -35,10 +36,10 @@ export default function BottomNav({ active, onChange, isAdmin }: Props) {
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}
             >
               <Icon
-                size={22}
+                size={20}
                 className={isActive ? (isAdminTab ? 'text-yellow-400' : 'text-[#fe7b11]') : 'text-white/65'}
               />
-              <span className={`text-[10px] font-medium ${isActive ? (isAdminTab ? 'text-yellow-400' : 'text-[#fe7b11]') : 'text-white/65'}`}>
+              <span className={`text-[9px] font-medium ${isActive ? (isAdminTab ? 'text-yellow-400' : 'text-[#fe7b11]') : 'text-white/65'}`}>
                 {tab.label}
               </span>
             </button>

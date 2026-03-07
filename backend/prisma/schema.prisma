@@ -28,10 +28,13 @@ model User {
   referrer    User?  @relation("referrals", fields: [referredBy], references: [id])
   referrals   User[] @relation("referrals")
 
-  entries     BattleEntry[]
-  votes       Vote[]
+  entries      BattleEntry[]
+  votes        Vote[]
   transactions Transaction[]
-  withdrawals WithdrawalRequest[]
+  withdrawals  WithdrawalRequest[]
+  createdTasks Task[]      @relation("createdTasks")
+  taskEntries  TaskEntry[]
+  taskVotes    TaskVote[]
 }
 
 model Battle {
@@ -107,6 +110,62 @@ model WithdrawalRequest {
   processedAt DateTime?
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model Task {
+  id              Int        @id @default(autoincrement())
+  title           String
+  description     String?
+  channelUsername String
+  budget          Float      @default(0)
+  prizeConfig     Json       @default("[]")
+  status          TaskStatus @default(PENDING_PAYMENT)
+  creatorId       Int
+  paymentTxHash   String?
+  minParticipants Int        @default(2)
+  endsAt          DateTime?
+  createdAt       DateTime   @default(now())
+
+  creator User       @relation("createdTasks", fields: [creatorId], references: [id])
+  entries TaskEntry[]
+}
+
+model TaskEntry {
+  id        Int        @id @default(autoincrement())
+  taskId    Int
+  userId    Int
+  photoUrl  String
+  score     Int        @default(0)
+  rank      Int?
+  prize     Int?
+  createdAt DateTime   @default(now())
+
+  task  Task       @relation(fields: [taskId], references: [id])
+  user  User       @relation(fields: [userId], references: [id])
+  votes TaskVote[]
+
+  @@unique([taskId, userId])
+}
+
+model TaskVote {
+  id        Int      @id @default(autoincrement())
+  entryId   Int
+  userId    Int
+  reaction  String
+  points    Int
+  createdAt DateTime @default(now())
+
+  entry TaskEntry @relation(fields: [entryId], references: [id])
+  user  User      @relation(fields: [userId], references: [id])
+
+  @@unique([entryId, userId])
+}
+
+enum TaskStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  FINISHED
+  CANCELLED
 }
 
 enum BattleStatus {

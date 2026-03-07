@@ -8,6 +8,7 @@ import { resetAchievementsIfNewMonth } from './services/achievementService'
 import usersRouter from './routes/users'
 import battlesRouter from './routes/battles'
 import balanceRouter from './routes/balance'
+import tasksRouter from './routes/tasks'
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '3000')
@@ -22,6 +23,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), process.env.UPLOAD_D
 app.use('/api/users', usersRouter)
 app.use('/api/battles', battlesRouter)
 app.use('/api/balance', balanceRouter)
+app.use('/api/tasks', tasksRouter)
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })
