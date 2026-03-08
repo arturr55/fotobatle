@@ -312,13 +312,13 @@ export default function ProfilePage() {
         )}
 
         {/* Withdrawal requests */}
-        {withdrawals && withdrawals.length > 0 && (
+        {withdrawals && withdrawals.filter(w => w.status === 'PENDING').length > 0 && (
           <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
             <div className="flex items-center gap-2 mb-3">
               <Clock size={14} style={{ color: 'rgba(26,22,42,0.45)' }} />
               <h3 className="text-sm font-medium" style={{ color: 'rgba(26,22,42,0.6)' }}>Заявки на вывод</h3>
             </div>
-            {withdrawals.map(w => (
+            {withdrawals.filter(w => w.status === 'PENDING').map(w => (
               <div key={w.id} className="flex items-center justify-between py-2 border-b last:border-0" style={{ borderColor: 'rgba(26,22,42,0.08)' }}>
                 <div>
                   <p className="text-sm font-medium" style={{ color: DARK }}>{w.amount} монет</p>
