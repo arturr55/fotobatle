@@ -162,6 +162,30 @@ export async function activateUpcomingBattles() {
   })
 
   for (const battle of battlesToActivate) {
+    if (battle.entries.length < battle.minParticipants) {
+      await prisma.battle.update({ where: { id: battle.id }, data: { status: 'CANCELLED' } })
+      for (const entry of battle.entries) {
+        if (battle.entryFee > 0) {
+          await prisma.$transaction([
+            prisma.user.update({ where: { id: entry.userId }, data: { balance: { increment: battle.entryFee } } }),
+            prisma.transaction.create({
+              data: {
+                userId: entry.userId,
+                type: 'REFUND',
+                amount: battle.entryFee,
+                description: `Возврат взноса: батл "${battle.title}" отменён (мало участников)`,
+                metadata: { battleId: battle.id }
+              }
+            })
+          ])
+        }
+        await sendNotification(entry.user.telegramId,
+          `❌ <b>Батл "${battle.title}" отменён</b>\n\nНе набралось минимум ${battle.minParticipants} участников. Взнос возвращён.`)
+      }
+      console.log(`Cancelled battle ${battle.id} (not enough participants: ${battle.entries.length}/${battle.minParticipants})`)
+      continue
+    }
+
     await prisma.battle.update({ where: { id: battle.id }, data: { status: 'ACTIVE' } })
     for (const entry of battle.entries) {
       await sendNotification(entry.user.telegramId,
