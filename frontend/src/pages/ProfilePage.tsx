@@ -488,7 +488,7 @@ export default function ProfilePage() {
               <div>
                 <p className="text-sm font-semibold" style={{ color: DARK }}>Открыт для общения</p>
                 <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
-                  {user.allowMessages ? 'Другие могут написать тебе' : 'Только ты видишь своё фото'}
+                  {user.allowMessages ? 'Другие могут написать тебе во время голосования' : 'Кнопка "Написать" скрыта от других'}
                 </p>
               </div>
             </div>
