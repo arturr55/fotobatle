@@ -100,18 +100,26 @@ router.get('/:id/vote-entry', async (req: AuthRequest, res: Response) => {
 
   const votedIds = alreadyVoted.map(v => v.entryId)
 
-  const entry = await prisma.battleEntry.findFirst({
+  const candidates = await prisma.battleEntry.findMany({
     where: {
       battleId,
       userId: { not: req.user!.id },
       id: { notIn: votedIds.length > 0 ? votedIds : undefined }
     },
+    select: { id: true }
+  })
+
+  if (candidates.length === 0) return res.json(null)
+
+  const randomId = candidates[Math.floor(Math.random() * candidates.length)].id
+
+  const entry = await prisma.battleEntry.findUnique({
+    where: { id: randomId },
     include: {
       user: {
         select: { id: true, username: true, firstName: true, avatarUrl: true, allowMessages: true }
       }
-    },
-    orderBy: { createdAt: 'asc' }
+    }
   })
 
   if (!entry) return res.json(null)

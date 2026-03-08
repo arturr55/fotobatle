@@ -13,7 +13,12 @@ type PrizePlace = {
 export async function finishBattle(battleId: number) {
   const battle = await prisma.battle.findUnique({
     where: { id: battleId },
-    include: { entries: { orderBy: { score: 'desc' } } }
+    include: {
+      entries: {
+        orderBy: [{ score: 'desc' }, { createdAt: 'asc' }],
+        include: { _count: { select: { votes: true } } }
+      }
+    }
   })
 
   if (!battle || battle.status !== 'ACTIVE') {
@@ -58,8 +63,17 @@ export async function finishBattle(battleId: number) {
   const distributablePool = Math.floor(effectivePool * (1 - PLATFORM_CUT))
   const medals = ['🥇', '🥈', '🥉']
 
+  // Sort entries: by score desc, then by unique voter count desc (tiebreaker), then by registration time asc
+  const sortedEntries = [...battle.entries].sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score
+    const aVotes = (a as any)._count?.votes ?? 0
+    const bVotes = (b as any)._count?.votes ?? 0
+    if (bVotes !== aVotes) return bVotes - aVotes
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  })
+
   const winnerCount = prizeConfig.length || 3
-  const winners = battle.entries.slice(0, winnerCount)
+  const winners = sortedEntries.slice(0, winnerCount)
 
   for (let i = 0; i < winners.length; i++) {
     const entry = winners[i]
@@ -139,8 +153,8 @@ export async function finishBattle(battleId: number) {
 
   // Notify non-winners and delete their entries
   const loserIds: number[] = []
-  for (let i = winnerCount; i < battle.entries.length; i++) {
-    const entry = battle.entries[i]
+  for (let i = winnerCount; i < sortedEntries.length; i++) {
+    const entry = sortedEntries[i]
     loserIds.push(entry.id)
     const user = await prisma.user.findUnique({ where: { id: entry.userId }, select: { telegramId: true } })
     if (user) {
@@ -150,6 +164,7 @@ export async function finishBattle(battleId: number) {
   }
 
   if (loserIds.length > 0) {
+    await prisma.vote.deleteMany({ where: { entryId: { in: loserIds } } })
     await prisma.battleEntry.deleteMany({ where: { id: { in: loserIds } } })
   }
 }
