@@ -30,12 +30,14 @@ function timeLeft(endsAt: string): string {
 
 export default function BattleCard({ battle, onClick }: Props) {
   const isActive = battle.status === 'ACTIVE'
+  const hasEntries = (battle._count?.entries ?? 0) > 0
   const [g1, g2] = CATEGORY_GRADIENTS[battle.category] || ['#8b5cf6', '#06b6d4']
+  const handleClick = isActive && !hasEntries ? undefined : onClick
 
   return (
     <div
-      onClick={onClick}
-      className="overflow-hidden rounded-3xl cursor-pointer active:scale-95 transition-transform"
+      onClick={handleClick}
+      className={`overflow-hidden rounded-3xl transition-transform ${isActive && !hasEntries ? 'cursor-default opacity-70' : 'cursor-pointer active:scale-95'}`}
       style={{ border: '1px solid rgba(26,22,42,0.1)' }}
     >
       {/* Dark top zone — solid #1a162a */}
@@ -102,7 +104,7 @@ export default function BattleCard({ battle, onClick }: Props) {
             boxShadow: '0 4px 20px rgba(254,123,17,0.4)',
           }}
         >
-          {isActive ? '🔥 Голосовать' : '📸 Участвовать'}
+          {isActive && (battle._count?.entries ?? 0) === 0 ? '⏳ Ждём участников' : isActive ? '🔥 Голосовать' : '📸 Участвовать'}
         </div>
       </div>
     </div>
