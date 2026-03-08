@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
+import { useQueryClient } from '@tanstack/react-query'
 import { useBattles, useVoteEntry, useVote } from '../hooks/useBattles'
 import { useUser } from '../hooks/useUser'
 import { mediaUrl } from '../api/client'
@@ -15,6 +16,7 @@ const GLASS_BG = 'rgba(8,8,18,0.96)'
 const SWIPE_THRESHOLD = 80
 
 function VoteCard({ battleId, bonusVotes }: { battleId: number; bonusVotes: number }) {
+  const queryClient = useQueryClient()
   const { data: entry, isLoading, refetch } = useVoteEntry(battleId)
   const vote = useVote(battleId)
   const [voted, setVoted] = useState<string | null>(null)
@@ -40,6 +42,7 @@ function VoteCard({ battleId, bonusVotes }: { battleId: number; bonusVotes: numb
     setTimeout(() => {
       setVoted(null)
       setBonusUsed(false)
+      queryClient.removeQueries({ queryKey: ['vote-entry', battleId] })
       refetch()
     }, 900)
   }
