@@ -239,10 +239,10 @@ function VoteCard({ battleId, bonusVotes }: { battleId: number; bonusVotes: numb
   )
 }
 
-export default function VotePage() {
+export default function VotePage({ initialBattleId }: { initialBattleId?: number }) {
   const { data: battles } = useBattles()
   const { data: user } = useUser()
-  const [selectedBattleId, setSelectedBattleId] = useState<number | null>(null)
+  const [selectedBattleId, setSelectedBattleId] = useState<number | null>(initialBattleId ?? null)
 
   const activeBattles = battles?.filter(b => b.status === 'ACTIVE') || []
   const currentBattle = selectedBattleId

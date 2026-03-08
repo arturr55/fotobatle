@@ -3,9 +3,10 @@ import BattleCard from '../components/BattleCard'
 
 interface Props {
   onSelectBattle: (id: number) => void
+  onVoteBattle: (id: number) => void
 }
 
-export default function BattlesPage({ onSelectBattle }: Props) {
+export default function BattlesPage({ onSelectBattle, onVoteBattle }: Props) {
   const { data: battles, isLoading } = useBattles()
 
   const active = battles?.filter(b => b.status === 'ACTIVE') || []
@@ -49,7 +50,7 @@ export default function BattlesPage({ onSelectBattle }: Props) {
           </h2>
           <div className="flex flex-col gap-3 px-4">
             {active.map(b => (
-              <BattleCard key={b.id} battle={b} onClick={() => onSelectBattle(b.id)} />
+              <BattleCard key={b.id} battle={b} onClick={() => (b._count?.entries ?? 0) > 0 ? onVoteBattle(b.id) : undefined} />
             ))}
           </div>
         </div>

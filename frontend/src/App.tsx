@@ -17,6 +17,7 @@ const MANIFEST_URL = 'https://selfless-abundance-production-77c6.up.railway.app/
 export default function App() {
   const [tab, setTab] = useState<Tab>('battles')
   const [selectedBattleId, setSelectedBattleId] = useState<number | null>(null)
+  const [voteBattleId, setVoteBattleId] = useState<number | undefined>(undefined)
   const { data: user } = useUser()
 
   useEffect(() => {
@@ -57,8 +58,8 @@ export default function App() {
     <TonConnectUIProvider manifestUrl={MANIFEST_URL}>
       <div style={{ minHeight: '100vh', background: '#fcfeff' }}>
         <div className="pb-20">
-          {tab === 'battles' && <BattlesPage onSelectBattle={setSelectedBattleId} />}
-          {tab === 'vote' && <VotePage />}
+          {tab === 'battles' && <BattlesPage onSelectBattle={setSelectedBattleId} onVoteBattle={id => { setVoteBattleId(id); setTab('vote') }} />}
+          {tab === 'vote' && <VotePage initialBattleId={voteBattleId} />}
           {tab === 'top' && <TopPage />}
           {tab === 'profile' && <ProfilePage />}
           {tab === 'admin' && <AdminPage />}
