@@ -216,6 +216,20 @@ router.post('/:id/enter', async (req: AuthRequest, res: Response) => {
           return res.status(400).json({ error: 'NOT_SUBSCRIBED', channel: currentChannel.promotion.channelUsername })
         }
       } catch {
+        // Bot was likely kicked — suspend promotion and notify admin
+        await prisma.channelPromotion.update({ where: { id: currentChannel.promotionId }, data: { status: 'CANCELLED' } })
+        const owner = await prisma.user.findUnique({ where: { id: currentChannel.promotion.ownerId }, select: { telegramId: true } })
+        if (owner) {
+          await sendNotification(owner.telegramId,
+            `⚠️ Продвижение канала @${currentChannel.promotion.channelUsername} приостановлено.\n\nБот не может проверить подписку — убедитесь, что бот остаётся в канале. Обратитесь к администратору.`)
+        }
+        const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean)
+        for (const adminId of adminIds) {
+          try {
+            await sendNotification(BigInt(adminId),
+              `🚨 Промо @${currentChannel.promotion.channelUsername} отменено — бот не может проверить подписку (возможно, бота удалили из канала).`)
+          } catch {}
+        }
         return res.status(400).json({ error: 'SUBSCRIPTION_CHECK_FAILED', channel: currentChannel.promotion.channelUsername })
       }
     }
