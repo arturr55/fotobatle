@@ -332,7 +332,7 @@ function AdminWithdrawals() {
   const queryClient = useQueryClient()
 
   const { data: withdrawals } = useQuery<(WithdrawalRequest & {
-    user: { telegramId: string; firstName: string; username: string | null }
+    user: { id: number; firstName: string; username: string | null }
   })[]>({
     queryKey: ['admin-withdrawals'],
     queryFn: () => api.get('/balance/admin/withdrawals').then(r => r.data),
@@ -358,7 +358,7 @@ function AdminWithdrawals() {
             <div>
               <p className="font-medium text-sm" style={{ color: DARK }}>{w.user.firstName}</p>
               <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
-                @{w.user.username || w.user.telegramId} · {w.amount} BS⭐
+                @{w.user.username || `id:${w.user.id}`} · {w.amount} BS⭐
               </p>
             </div>
             <div className="flex gap-2">

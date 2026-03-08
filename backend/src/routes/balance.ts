@@ -119,7 +119,7 @@ router.get('/admin/withdrawals', adminOnly, async (req: AuthRequest, res: Respon
     where: { status: 'PENDING' },
     include: {
       user: {
-        select: { id: true, telegramId: true, username: true, firstName: true }
+        select: { id: true, username: true, firstName: true }
       }
     },
     orderBy: { createdAt: 'asc' }
