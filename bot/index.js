@@ -90,67 +90,27 @@ bot.on('message', async (ctx) => {
   }
 })
 
-const WEBHOOK_URL = process.env.WEBHOOK_URL
 const PORT = parseInt(process.env.PORT || '3000')
-const WEBHOOK_PATH = `/webhook/${bot.secretPathComponent()}`
 
-console.log(`Starting bot... PORT=${PORT}, WEBHOOK=${WEBHOOK_URL}, TOKEN=${!!process.env.BOT_TOKEN}`)
+// Health check server (Railway requires it)
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' })
+  res.end(JSON.stringify({ ok: true }))
+})
+server.listen(PORT, () => {
+  console.log(`Health server on port ${PORT}`)
+})
 
-if (WEBHOOK_URL) {
-  const webhookUrl = `${WEBHOOK_URL.replace(/\/$/, '')}${WEBHOOK_PATH}`
-
-  bot.telegram.setWebhook(webhookUrl).then(() => {
-    console.log(`Webhook set to: ${webhookUrl}`)
-
-    const server = http.createServer((req, res) => {
-      if (req.url === '/health') {
-        res.writeHead(200, { 'Content-Type': 'application/json' })
-        res.end(JSON.stringify({ ok: true }))
-        return
-      }
-
-      if (req.method === 'POST' && req.url === WEBHOOK_PATH) {
-        let body = ''
-        req.on('data', chunk => { body += chunk.toString() })
-        req.on('end', () => {
-          try {
-            const update = JSON.parse(body)
-            bot.handleUpdate(update).then(() => {
-              res.writeHead(200)
-              res.end('ok')
-            }).catch(err => {
-              console.error('handleUpdate error:', err)
-              res.writeHead(500)
-              res.end('error')
-            })
-          } catch (err) {
-            console.error('JSON parse error:', err)
-            res.writeHead(400)
-            res.end('bad request')
-          }
-        })
-        return
-      }
-
-      res.writeHead(404)
-      res.end('not found')
-    })
-
-    server.listen(PORT, () => {
-      console.log(`Bot server listening on port ${PORT}`)
-    })
-  }).catch(err => {
-    console.error('Failed to set webhook:', err)
-    process.exit(1)
-  })
-} else {
-  bot.launch({ dropPendingUpdates: true }).then(() => {
-    console.log('Bot started (polling)')
-  }).catch(err => {
-    console.error('Failed to start bot:', err)
-    process.exit(1)
-  })
-}
+// Delete webhook and start polling
+bot.telegram.deleteWebhook({ drop_pending_updates: true }).then(() => {
+  console.log('Webhook deleted, starting polling...')
+  return bot.launch()
+}).then(() => {
+  console.log('Bot started (polling)')
+}).catch(err => {
+  console.error('Failed to start bot:', err)
+  process.exit(1)
+})
 
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
