@@ -1,5 +1,5 @@
 import prisma from '../db'
-import { sendNotification } from './notifyService'
+import { sendNotification, announceWinners } from './notifyService'
 
 const PLATFORM_CUT = 0.25 // 25%
 
@@ -120,6 +120,21 @@ export async function finishBattle(battleId: number) {
       }
     }
   }
+
+  // Announce winners to channel
+  const winnerEntries = await prisma.battleEntry.findMany({
+    where: { battleId, rank: { not: null } },
+    orderBy: { rank: 'asc' },
+    include: { user: { select: { firstName: true, username: true } } }
+  })
+  await announceWinners(battle.title, winnerEntries.map(e => ({
+    rank: e.rank!,
+    prize: e.prize ?? 0,
+    score: e.score,
+    photoUrl: e.photoUrl,
+    firstName: e.user.firstName,
+    username: e.user.username,
+  })))
 
   // Notify non-winners and delete their entries
   const loserIds: number[] = []
