@@ -63,13 +63,14 @@ function LeaderBoard({ battleId }: { battleId: number }) {
         <div key={entry.id} className="flex items-center gap-3 p-3 rounded-2xl"
           style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
           <span className="text-sm w-5 text-center font-medium" style={{ color: 'rgba(26,22,42,0.4)' }}>{i + 4}</span>
-          <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+          <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
             <img src={mediaUrl(entry.photoUrl)} alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 15%' }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm truncate font-medium" style={{ color: DARK }}>{entry.user?.firstName || 'Участник'}</p>
+            <p className="text-base truncate font-bold" style={{ color: DARK }}>{entry.user?.firstName || 'Участник'}</p>
+            {entry.user?.username && <p className="text-xs truncate" style={{ color: 'rgba(26,22,42,0.4)' }}>@{entry.user.username}</p>}
           </div>
-          <span className="text-sm font-bold" style={{ color: '#fe7b11' }}>{entry.score}</span>
+          <span className="text-sm font-bold" style={{ color: '#fe7b11' }}>{entry.score} очков</span>
         </div>
       ))}
     </div>
