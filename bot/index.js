@@ -1,5 +1,6 @@
 require('dotenv').config()
 const { Telegraf, Markup } = require('telegraf')
+const http = require('http')
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 const MINI_APP_URL = process.env.MINI_APP_URL || 'https://yourdomain.com'
@@ -8,7 +9,7 @@ bot.command('start', async (ctx) => {
   const firstName = ctx.from.first_name
 
   await ctx.reply(
-    `🔥 *ФотоБатл* — соревнуйся и выигрывай!\n\nПривет, ${firstName}! 👋\n\n📸 Загружай фото в баттл\n❤️ Голосуй за других\n⭐ Выигрывай монеты и призы`,
+    `🔥 *Фото Баттл* — соревнуйся и выигрывай!\n\nПривет, ${firstName}! 👋\n\n📸 Загружай фото в баттл\n❤️ Голосуй за других\n⭐ Выигрывай монеты и призы`,
     {
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
@@ -19,7 +20,6 @@ bot.command('start', async (ctx) => {
     }
   )
 
-  // Send starter pack invoice
   await ctx.replyWithInvoice({
     title: 'Стартовый пакет',
     description: '5 Батл Старс — хватит на первый батл!',
@@ -33,25 +33,24 @@ bot.command('start', async (ctx) => {
 bot.action('how_it_works', (ctx) => {
   ctx.answerCbQuery()
   ctx.reply(
-    `*Как работает ФотоБатл?*\n\n` +
-    `1️⃣ Открой батл и загрузи своё фото\n` +
-    `2️⃣ Заплати взнос монетами (10 Stars = 10 монет)\n` +
+    `*Как работает Фото Баттл?*\n\n` +
+    `1️⃣ Открой баттл и загрузи своё фото\n` +
+    `2️⃣ Заплати взнос монетами\n` +
     `3️⃣ Другие участники голосуют за фото реакциями\n` +
-    `4️⃣ В конце батла топ-3 получают призы из общего пула\n\n` +
+    `4️⃣ В конце баттла топ-3 получают призы из общего пула\n\n` +
     `💰 *Призы:*\n🥇 1-е место — 50% пула\n🥈 2-е место — 25% пула\n🥉 3-е место — 15% пула\n\n` +
-    `*Вывод монет* — минимум 100, срок 24-48 часов.`,
+    `*Вывод монет* — минимум 10, срок 24-48 часов.`,
     { parse_mode: 'Markdown' }
   )
 })
 
 bot.command('help', (ctx) => {
   ctx.reply(
-    `*Команды ФотоБатл:*\n\n/start — главное меню\n/help — помощь`,
+    `*Команды Фото Баттл:*\n\n/start — главное меню\n/help — помощь`,
     { parse_mode: 'Markdown' }
   )
 })
 
-// Must answer pre_checkout_query within 10 seconds
 bot.on('pre_checkout_query', (ctx) => {
   ctx.answerPreCheckoutQuery(true)
 })
@@ -81,7 +80,7 @@ bot.on('message', async (ctx) => {
       }),
     })
     if (resp.ok) {
-      ctx.reply(`Баланс пополнен на ${coins} Батл Старс! Удачи в батлах! ⭐`)
+      ctx.reply(`Баланс пополнен на ${coins} Батл Старс! Удачи в баттлах! ⭐`)
     } else {
       ctx.reply('Оплата получена, но произошла ошибка зачисления. Напишите в поддержку.')
     }
@@ -94,18 +93,23 @@ bot.on('message', async (ctx) => {
 const WEBHOOK_URL = process.env.WEBHOOK_URL
 const PORT = parseInt(process.env.PORT || '3000')
 
-console.log(`PORT=${PORT}, WEBHOOK_URL=${WEBHOOK_URL}, BOT_TOKEN set=${!!process.env.BOT_TOKEN}`)
+console.log(`Starting bot... PORT=${PORT}, WEBHOOK=${WEBHOOK_URL}, TOKEN=${!!process.env.BOT_TOKEN}`)
 
 if (WEBHOOK_URL) {
-  bot.launch({
-    webhook: {
-      domain: WEBHOOK_URL,
-      port: PORT,
-    },
-  }).then(() => {
-    console.log(`Bot started (webhook: ${WEBHOOK_URL}:${PORT})`)
+  bot.createWebhook({ domain: WEBHOOK_URL }).then(webhookHandler => {
+    const server = http.createServer((req, res) => {
+      if (req.url === '/health') {
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ ok: true }))
+        return
+      }
+      webhookHandler(req, res)
+    })
+    server.listen(PORT, () => {
+      console.log(`Bot running on port ${PORT} (webhook: ${WEBHOOK_URL})`)
+    })
   }).catch(err => {
-    console.error('Failed to start bot:', err)
+    console.error('Failed to create webhook:', err)
     process.exit(1)
   })
 } else {
