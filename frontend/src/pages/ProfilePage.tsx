@@ -142,6 +142,15 @@ export default function ProfilePage() {
       WebApp.showAlert('Минимальная сумма вывода — 10 Баттл Старс')
       return
     }
+    if (user && amount > user.balance) {
+      WebApp.showAlert(`Недостаточно средств. У тебя ${user.balance} BS⭐`)
+      return
+    }
+    const hasPending = withdrawals?.some(w => w.status === 'PENDING')
+    if (hasPending) {
+      WebApp.showAlert('У тебя уже есть заявка на вывод в обработке. Дождись её завершения.')
+      return
+    }
     withdrawMutation.mutate(amount)
   }
 
