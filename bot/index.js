@@ -12,8 +12,8 @@ bot.command('start', async (ctx) => {
     {
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
-        [Markup.button.webApp('🚀 Открыть ФотоБатл', MINI_APP_URL)],
-        [Markup.button.url('🔗 Открыть ФотоБатл', 'https://t.me/photobattletgbot/PhotoBattle')],
+        [Markup.button.webApp('🚀 Открыть Фото Баттл', MINI_APP_URL)],
+        [Markup.button.url('🔗 Открыть Фото Баттл', 'https://t.me/photobattletgbot/PhotoBattle')],
         [Markup.button.callback('❓ Как это работает?', 'how_it_works')]
       ])
     }
