@@ -247,7 +247,7 @@ export default function VotePage({ initialBattleId }: { initialBattleId?: number
       )}
 
       {/* Battle selector */}
-      {activeBattles.length > 1 && (
+      {activeBattles.length > 1 && !initialBattleId && (
         <div className="absolute top-4 left-0 right-0 z-20 px-4">
           <div className="flex gap-2 overflow-x-auto pb-1">
             {activeBattles.map(b => (

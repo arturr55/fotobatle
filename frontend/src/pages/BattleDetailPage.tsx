@@ -63,7 +63,10 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
         const msg = achievements.map((a: any) => `🏆 ${a.label} +${a.bonus} бонусных голоса`).join('\n')
         WebApp.showAlert(`Ты в баттле!\n\n${msg}`)
       } else {
-        WebApp.showAlert('Ты в баттле! Голосование началось.')
+        const msg = battle.status === 'UPCOMING'
+          ? 'Ты в баттле! Ждём начала голосования.'
+          : 'Ты в баттле! Голосование уже идёт!'
+        WebApp.showAlert(msg)
       }
     } catch (err: any) {
       const errData = err.response?.data
