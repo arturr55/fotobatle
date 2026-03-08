@@ -80,7 +80,7 @@ function VoteCard({ battleId, bonusVotes }: { battleId: number; bonusVotes: numb
         >
           <span className="text-5xl mb-4">✅</span>
           <p className="text-2xl font-bold text-white mb-2">Все оценено!</p>
-          <p className="text-sm text-white/50">Ты оценил все фото в этом батле.</p>
+          <p className="text-sm text-white/50">Ты оценил все фото в этом баттле.</p>
           <p className="text-xs text-white/30 mt-1">Возвращайся позже!</p>
         </div>
       </div>
@@ -259,7 +259,7 @@ export default function VotePage() {
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
           <span className="text-6xl mb-4">🔥</span>
-          <p className="text-xl font-bold mb-2" style={{ color: '#1a162a' }}>Нет активных батлов</p>
+          <p className="text-xl font-bold mb-2" style={{ color: '#1a162a' }}>Нет активных баттлов</p>
           <p className="text-sm" style={{ color: 'rgba(26,22,42,0.45)' }}>Скоро появятся новые!</p>
         </div>
       )}

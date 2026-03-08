@@ -45,7 +45,7 @@ export default function BattlesPage({ onSelectBattle }: Props) {
         <div className="mt-4">
           <h2 className="text-xs font-semibold uppercase tracking-wider px-4 mb-3"
             style={{ color: 'rgba(26,22,42,0.45)' }}>
-            Активные батлы
+            Активные баттлы
           </h2>
           <div className="flex flex-col gap-3 px-4">
             {active.map(b => (
@@ -72,7 +72,7 @@ export default function BattlesPage({ onSelectBattle }: Props) {
       {!isLoading && battles?.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16" style={{ color: 'rgba(26,22,42,0.4)' }}>
           <span className="text-5xl mb-4">📸</span>
-          <p className="text-lg font-medium" style={{ color: '#1a162a' }}>Нет активных батлов</p>
+          <p className="text-lg font-medium" style={{ color: '#1a162a' }}>Нет активных баттлов</p>
           <p className="text-sm mt-1">Скоро появятся новые!</p>
         </div>
       )}

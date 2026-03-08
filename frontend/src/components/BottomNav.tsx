@@ -9,7 +9,7 @@ interface Props {
 }
 
 const baseTabs = [
-  { id: 'battles' as Tab, icon: Zap, label: 'Батлы' },
+  { id: 'battles' as Tab, icon: Zap, label: 'Баттлы' },
   { id: 'vote' as Tab, icon: Flame, label: 'Голосовать' },
   { id: 'top' as Tab, icon: Trophy, label: 'Топ' },
   { id: 'profile' as Tab, icon: User, label: 'Профиль' },

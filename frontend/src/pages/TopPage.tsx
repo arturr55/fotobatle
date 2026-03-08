@@ -32,7 +32,7 @@ function LeaderBoard({ battleId }: { battleId: number }) {
             {first.prize ? (
               <span className="text-sm font-bold px-2 py-0.5 rounded-full"
                 style={{ background: 'rgba(254,123,17,0.3)', color: '#fe7b11' }}>
-                ⭐ +{first.prize} Батл Старс
+                ⭐ +{first.prize} Баттл Старс
               </span>
             ) : null}
           </div>
@@ -84,7 +84,7 @@ function WinnersSection() {
     return (
       <div className="flex flex-col items-center justify-center py-16" style={{ color: 'rgba(26,22,42,0.4)' }}>
         <span className="text-5xl mb-4">🏆</span>
-        <p>Завершённых батлов пока нет</p>
+        <p>Завершённых баттлов пока нет</p>
       </div>
     )
   }
@@ -119,7 +119,7 @@ function WinnersSection() {
                       style={{ background: 'rgba(254,123,17,0.12)' }}>
                       <Star size={11} fill="#fe7b11" color="#fe7b11" />
                       <span className="text-xs font-bold" style={{ color: '#fe7b11' }}>
-                        +{entry.prize} Батл Старс
+                        +{entry.prize} Баттл Старс
                       </span>
                     </div>
                   )}
@@ -158,7 +158,7 @@ export default function TopPage() {
               <span className="text-white" style={{ fontSize: '2.6rem' }}>Топ </span>
               <span style={{ fontSize: '2.6rem', color: '#fe7b11' }}>Рейтинг</span>
             </h1>
-            <p className="text-white/50 text-sm">Лучшие фото батлов</p>
+            <p className="text-white/50 text-sm">Лучшие фото баттлов</p>
           </div>
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function TopPage() {
         ) : (
           <div className="flex flex-col items-center justify-center py-20" style={{ color: 'rgba(26,22,42,0.4)' }}>
             <span className="text-5xl mb-4">🏆</span>
-            <p style={{ color: DARK }}>Нет активных батлов</p>
+            <p style={{ color: DARK }}>Нет активных баттлов</p>
           </div>
         )
       ) : (

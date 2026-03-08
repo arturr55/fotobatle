@@ -115,7 +115,7 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battles'] })
       queryClient.invalidateQueries({ queryKey: ['admin-battles'] })
-      WebApp.showAlert('Батл создан!')
+      WebApp.showAlert('Баттл создан!')
       onClose()
     },
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
@@ -148,7 +148,7 @@ function CreateBattleForm({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col gap-3 p-4 rounded-2xl mb-4"
       style={{ background: CARD, border: '1px solid rgba(26,22,42,0.1)' }}>
-      <h3 className="font-semibold" style={{ color: DARK }}>Новый батл</h3>
+      <h3 className="font-semibold" style={{ color: DARK }}>Новый баттл</h3>
 
       <div>
         <label style={labelStyle}>Название</label>
@@ -408,7 +408,7 @@ function AdminBattles() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-battles'] })
       queryClient.invalidateQueries({ queryKey: ['battles'] })
-      WebApp.showAlert('Батл завершён, призы распределены!')
+      WebApp.showAlert('Баттл завершён, призы распределены!')
     },
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
   })
@@ -469,7 +469,7 @@ function AdminBattles() {
   }
 
   if (!battles?.length) {
-    return <div className="text-center py-8 text-sm" style={{ color: 'rgba(26,22,42,0.4)' }}>Нет батлов</div>
+    return <div className="text-center py-8 text-sm" style={{ color: 'rgba(26,22,42,0.4)' }}>Нет баттлов</div>
   }
 
   return (
@@ -511,7 +511,7 @@ function AdminBattles() {
               )}
               {b.status === 'ACTIVE' && (
                 <button
-                  onClick={() => WebApp.showConfirm('Завершить батл и распределить призы?', ok => { if (ok) finish.mutate(b.id) })}
+                  onClick={() => WebApp.showConfirm('Завершить баттл и распределить призы?', ok => { if (ok) finish.mutate(b.id) })}
                   className="flex items-center gap-1 px-2.5 h-8 rounded-xl text-xs font-medium"
                   style={{ background: 'rgba(254,123,17,0.15)', color: '#fe7b11', border: 'none', cursor: 'pointer' }}>
                   <Flag size={12} />
@@ -782,7 +782,7 @@ export default function AdminPage() {
               <span className="text-white" style={{ fontSize: '2.2rem' }}>Админ </span>
               <span style={{ fontSize: '2.2rem', color: '#fe7b11' }}>Панель</span>
             </h1>
-            <p className="text-white/50 text-sm">Управление батлами</p>
+            <p className="text-white/50 text-sm">Управление баттлами</p>
           </div>
         </div>
       </div>
@@ -795,7 +795,7 @@ export default function AdminPage() {
             className="w-full py-3 rounded-2xl font-semibold text-sm text-white flex items-center justify-center gap-2 active:scale-95 transition-transform"
             style={{ background: '#fe7b11', border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(254,123,17,0.35)' }}>
             <Plus size={18} />
-            Создать батл
+            Создать баттл
           </button>
         ) : (
           <CreateBattleForm onClose={() => setShowCreate(false)} />
@@ -811,7 +811,7 @@ export default function AdminPage() {
                 color: tab === t ? 'white' : 'rgba(26,22,42,0.5)',
                 border: 'none', cursor: 'pointer',
               }}>
-              {t === 'battles' ? 'Батлы' : t === 'channels' ? 'Каналы' : 'Выводы'}
+              {t === 'battles' ? 'Баттлы' : t === 'channels' ? 'Каналы' : 'Выводы'}
             </button>
           ))}
         </div>

@@ -139,7 +139,7 @@ export default function ProfilePage() {
   const handleWithdraw = () => {
     const amount = parseInt(withdrawAmount)
     if (!amount || amount < 10) {
-      WebApp.showAlert('Минимальная сумма вывода — 10 Батл Старс')
+      WebApp.showAlert('Минимальная сумма вывода — 10 Баттл Старс')
       return
     }
     withdrawMutation.mutate(amount)
@@ -218,7 +218,7 @@ export default function ProfilePage() {
               <Star size={14} fill="#fe7b11" color="#fe7b11" />
               <span className="font-bold" style={{ color: DARK }}>{user.balance}</span>
             </div>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Батл Старс</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>Баттл Старс</p>
           </div>
           <div className="rounded-2xl p-3 text-center" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
             <div className="flex items-center justify-center gap-1 mb-1">
@@ -248,7 +248,7 @@ export default function ProfilePage() {
 
         {showDeposit && (
           <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-            <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.55)' }}>1 Telegram Star = 1 Батл Стар. Выбери пакет:</p>
+            <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.55)' }}>1 Telegram Star = 1 Баттл Стар. Выбери пакет:</p>
             <div className="grid grid-cols-2 gap-2">
               {[{ stars: 5, coins: 5 }, { stars: 10, coins: 10 }, { stars: 25, coins: 25 }, { stars: 50, coins: 50 }].map(pkg => (
                 <button
@@ -259,7 +259,7 @@ export default function ProfilePage() {
                   style={{ background: 'white', border: '1px solid rgba(26,22,42,0.1)', cursor: 'pointer' }}
                 >
                   <span style={{ color: '#fe7b11' }}>{depositLoading === pkg.stars ? '...' : `⭐ ${pkg.stars} Stars`}</span>
-                  <span className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>{pkg.coins} Батл Старс</span>
+                  <span className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>{pkg.coins} Баттл Старс</span>
                 </button>
               ))}
             </div>
@@ -278,7 +278,7 @@ export default function ProfilePage() {
 
         {showWithdraw && (
           <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-            <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.55)' }}>Минимум 10 Батл Старс. Срок выплаты: 24-48 часов.</p>
+            <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.55)' }}>Минимум 10 Баттл Старс. Срок выплаты: 24-48 часов.</p>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -342,7 +342,7 @@ export default function ProfilePage() {
               </button>
             </div>
             <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>
-              Ваш канал будет показан участницам батлов как обязательная подписка для входа.
+              Ваш канал будет показан участницам баттлов как обязательная подписка для входа.
             </p>
 
             <div>
@@ -512,7 +512,7 @@ export default function ProfilePage() {
           <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
             <div className="flex items-center gap-2 mb-3">
               <Camera size={14} style={{ color: '#fe7b11' }} />
-              <h3 className="text-sm font-semibold" style={{ color: DARK }}>Мои батлы</h3>
+              <h3 className="text-sm font-semibold" style={{ color: DARK }}>Мои баттлы</h3>
             </div>
             <div className="flex flex-col gap-2">
               {myEntries.map(entry => (

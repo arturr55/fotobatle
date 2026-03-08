@@ -28,7 +28,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battle', battleId] })
       queryClient.invalidateQueries({ queryKey: ['user'] })
-      WebApp.showAlert('Ты вышел из батла. Взнос BS⭐ возвращён.')
+      WebApp.showAlert('Ты вышел из баттла. Взнос BS⭐ возвращён.')
     },
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка')
   })
@@ -61,14 +61,14 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
       const achievements = (result as any)?.achievements
       if (achievements?.length > 0) {
         const msg = achievements.map((a: any) => `🏆 ${a.label} +${a.bonus} бонусных голоса`).join('\n')
-        WebApp.showAlert(`Ты в батле!\n\n${msg}`)
+        WebApp.showAlert(`Ты в баттле!\n\n${msg}`)
       } else {
-        WebApp.showAlert('Ты в батле! Голосование началось.')
+        WebApp.showAlert('Ты в баттле! Голосование началось.')
       }
     } catch (err: any) {
       const errData = err.response?.data
       if (errData?.error === 'NOT_SUBSCRIBED') {
-        WebApp.showAlert(`Сначала подпишись на @${errData.channel} — это условие участия в этом батле.`)
+        WebApp.showAlert(`Сначала подпишись на @${errData.channel} — это условие участия в этом баттле.`)
       } else {
         WebApp.showAlert(errData?.error || 'Ошибка')
       }
@@ -183,7 +183,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
             {battle.status === 'UPCOMING' && (
               <button
                 onClick={() => WebApp.showConfirm(
-                  'Выйти из батла? Взнос BS⭐ вернётся только если нет голосов.',
+                  'Выйти из баттла? Взнос BS⭐ вернётся только если нет голосов.',
                   (ok) => { if (ok) leaveBattle.mutate() }
                 )}
                 disabled={leaveBattle.isPending}
@@ -218,7 +218,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
           <Clock size={20} style={{ color: '#fe7b11', flexShrink: 0 }} />
           <div>
             <p className="font-semibold text-sm" style={{ color: DARK }}>Голосование идёт</p>
-            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>Регистрация закрыта — приходи в следующий батл!</p>
+            <p className="text-xs" style={{ color: 'rgba(26,22,42,0.5)' }}>Регистрация закрыта — приходи в следующий баттл!</p>
           </div>
         </div>
       )}
@@ -249,11 +249,11 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
       {canEnter && (
         <div className="mx-4 mb-4 rounded-2xl p-4"
           style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
-          <h2 className="font-semibold mb-3" style={{ color: DARK }}>Участвовать в батле</h2>
+          <h2 className="font-semibold mb-3" style={{ color: DARK }}>Участвовать в баттле</h2>
 
           {!hasBalance && (
             <p className="text-red-500 text-sm mb-3">
-              Недостаточно Батл Старс. Нужно {battle.entryFee} BS⭐, у тебя {user?.balance || 0}.
+              Недостаточно Баттл Старс. Нужно {battle.entryFee} BS⭐, у тебя {user?.balance || 0}.
             </p>
           )}
 
