@@ -14,20 +14,10 @@ bot.command('start', async (ctx) => {
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
         [Markup.button.webApp('🚀 Открыть Фото Баттл', MINI_APP_URL)],
-        [Markup.button.url('🔗 Открыть Фото Баттл', 'https://t.me/photobattletgbot/PhotoBattle')],
         [Markup.button.callback('❓ Как это работает?', 'how_it_works')]
       ])
     }
   )
-
-  await ctx.replyWithInvoice({
-    title: 'Стартовый пакет',
-    description: '5 Батл Старс — хватит на первый батл!',
-    payload: `${ctx.from.id}:5`,
-    provider_token: '',
-    currency: 'XTR',
-    prices: [{ label: '5 Батл Старс', amount: 5 }],
-  }).catch((err) => console.error('Invoice error:', err))
 })
 
 bot.action('how_it_works', (ctx) => {
