@@ -1,5 +1,5 @@
 import { Router, Response } from 'express'
-import { authMiddleware, AuthRequest } from '../middleware/auth'
+import { authMiddleware, adminOnly, AuthRequest } from '../middleware/auth'
 import prisma from '../db'
 
 const router = Router()
@@ -82,6 +82,24 @@ router.get('/me/entries', async (req: AuthRequest, res: Response) => {
     take: 20,
   })
   res.json(entries)
+})
+
+router.get('/admin/stats', adminOnly, async (req: AuthRequest, res: Response) => {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const week = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const month = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+  const [total, todayCount, weekCount, monthCount, totalVotes, totalBattles] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { createdAt: { gte: today } } }),
+    prisma.user.count({ where: { createdAt: { gte: week } } }),
+    prisma.user.count({ where: { createdAt: { gte: month } } }),
+    prisma.vote.count(),
+    prisma.battle.count({ where: { status: { in: ['ACTIVE', 'FINISHED'] } } }),
+  ])
+
+  res.json({ total, todayCount, weekCount, monthCount, totalVotes, totalBattles })
 })
 
 export default router

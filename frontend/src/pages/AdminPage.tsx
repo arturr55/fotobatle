@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '../api/client'
 import type { Battle, WithdrawalRequest } from '../api/client'
-import { Plus, CheckCircle, XCircle, Flag, Trash2, Megaphone, Settings, Pencil, X, ShieldAlert } from 'lucide-react'
+import { Plus, CheckCircle, XCircle, Flag, Trash2, Megaphone, Settings, Pencil, X, ShieldAlert, Users } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 
 const DARK = '#1a162a'
@@ -761,6 +761,37 @@ function AdminChannels() {
   )
 }
 
+function AdminStats() {
+  const { data: stats } = useQuery<{
+    total: number; todayCount: number; weekCount: number; monthCount: number
+    totalVotes: number; totalBattles: number
+  }>({
+    queryKey: ['admin-stats'],
+    queryFn: () => api.get('/users/admin/stats').then(r => r.data),
+  })
+
+  if (!stats) return null
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {[
+        { label: 'Всего пользователей', value: stats.total, icon: '👥' },
+        { label: 'За сегодня', value: `+${stats.todayCount}`, icon: '📅' },
+        { label: 'За 7 дней', value: `+${stats.weekCount}`, icon: '📈' },
+        { label: 'За 30 дней', value: `+${stats.monthCount}`, icon: '🗓' },
+        { label: 'Всего голосов', value: stats.totalVotes, icon: '🗳' },
+        { label: 'Баттлов проведено', value: stats.totalBattles, icon: '🏆' },
+      ].map(s => (
+        <div key={s.label} className="rounded-2xl p-3" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+          <p className="text-xl mb-1">{s.icon}</p>
+          <p className="text-lg font-bold" style={{ color: DARK }}>{s.value}</p>
+          <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>{s.label}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function AdminPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [tab, setTab] = useState<'battles' | 'withdrawals' | 'channels'>('battles')
@@ -788,6 +819,9 @@ export default function AdminPage() {
       </div>
 
       <div className="px-4 pt-4 flex flex-col gap-3">
+        {/* Stats */}
+        <AdminStats />
+
         {/* Create button */}
         {!showCreate ? (
           <button
