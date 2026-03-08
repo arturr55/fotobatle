@@ -42,8 +42,9 @@ export async function finishBattle(battleId: number) {
       }
       const user = await prisma.user.findUnique({ where: { id: entry.userId }, select: { telegramId: true } })
       if (user) {
+        const refundText = battle.entryFee > 0 ? ' Взнос возвращён.' : ''
         await sendNotification(user.telegramId,
-          `❌ <b>Батл "${battle.title}" отменён</b>\n\nНе набралось минимум ${battle.minParticipants} участников. Взнос возвращён.`)
+          `❌ <b>Батл "${battle.title}" отменён</b>\n\nНе набралось минимум ${battle.minParticipants} участников.${refundText}`)
       }
     }
     return
@@ -194,8 +195,9 @@ export async function activateUpcomingBattles() {
             })
           ])
         }
+        const refundText = battle.entryFee > 0 ? ' Взнос возвращён.' : ''
         await sendNotification(entry.user.telegramId,
-          `❌ <b>Батл "${battle.title}" отменён</b>\n\nНе набралось минимум ${battle.minParticipants} участников. Взнос возвращён.`)
+          `❌ <b>Батл "${battle.title}" отменён</b>\n\nНе набралось минимум ${battle.minParticipants} участников.${refundText}`)
       }
       console.log(`Cancelled battle ${battle.id} (not enough participants: ${battle.entries.length}/${battle.minParticipants})`)
       continue
