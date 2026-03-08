@@ -94,17 +94,27 @@ bot.on('message', async (ctx) => {
 const WEBHOOK_URL = process.env.WEBHOOK_URL
 const PORT = parseInt(process.env.PORT || '3000')
 
+console.log(`PORT=${PORT}, WEBHOOK_URL=${WEBHOOK_URL}, BOT_TOKEN set=${!!process.env.BOT_TOKEN}`)
+
 if (WEBHOOK_URL) {
   bot.launch({
     webhook: {
       domain: WEBHOOK_URL,
       port: PORT,
     },
+  }).then(() => {
+    console.log(`Bot started (webhook: ${WEBHOOK_URL}:${PORT})`)
+  }).catch(err => {
+    console.error('Failed to start bot:', err)
+    process.exit(1)
   })
-  console.log(`Bot started (webhook: ${WEBHOOK_URL})`)
 } else {
-  bot.launch({ dropPendingUpdates: true })
-  console.log('Bot started (polling)')
+  bot.launch({ dropPendingUpdates: true }).then(() => {
+    console.log('Bot started (polling)')
+  }).catch(err => {
+    console.error('Failed to start bot:', err)
+    process.exit(1)
+  })
 }
 
 process.once('SIGINT', () => bot.stop('SIGINT'))
