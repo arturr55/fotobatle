@@ -201,15 +201,24 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
 
           {/* Share button */}
           <button
-            onClick={() => handleShare(myEntry.id)}
+            onClick={() => battle.status === 'ACTIVE' ? handleShare(myEntry.id) : undefined}
+            disabled={battle.status !== 'ACTIVE'}
             className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
-            style={{ background: '#fe7b11', border: 'none', cursor: 'pointer', color: 'white', boxShadow: '0 4px 16px rgba(254,123,17,0.35)' }}
+            style={{
+              background: battle.status === 'ACTIVE' ? '#fe7b11' : 'rgba(26,22,42,0.12)',
+              border: 'none',
+              cursor: battle.status === 'ACTIVE' ? 'pointer' : 'default',
+              color: battle.status === 'ACTIVE' ? 'white' : 'rgba(26,22,42,0.35)',
+              boxShadow: battle.status === 'ACTIVE' ? '0 4px 16px rgba(254,123,17,0.35)' : 'none',
+            }}
           >
             <Share2 size={15} />
             Поделиться ссылкой на фото
           </button>
           <p className="text-xs text-center mt-2" style={{ color: 'rgba(26,22,42,0.4)' }}>
-            Отправь друзьям — пусть проголосуют за тебя 🔥
+            {battle.status === 'ACTIVE'
+              ? 'Отправь друзьям — пусть проголосуют за тебя 🔥'
+              : '⏳ Ссылка станет активной когда начнётся голосование'}
           </p>
         </div>
       )}
