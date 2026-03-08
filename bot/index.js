@@ -92,24 +92,55 @@ bot.on('message', async (ctx) => {
 
 const WEBHOOK_URL = process.env.WEBHOOK_URL
 const PORT = parseInt(process.env.PORT || '3000')
+const WEBHOOK_PATH = `/webhook/${bot.secretPathComponent()}`
 
 console.log(`Starting bot... PORT=${PORT}, WEBHOOK=${WEBHOOK_URL}, TOKEN=${!!process.env.BOT_TOKEN}`)
 
 if (WEBHOOK_URL) {
-  bot.createWebhook({ domain: WEBHOOK_URL }).then(webhookHandler => {
+  const webhookUrl = `${WEBHOOK_URL.replace(/\/$/, '')}${WEBHOOK_PATH}`
+
+  bot.telegram.setWebhook(webhookUrl).then(() => {
+    console.log(`Webhook set to: ${webhookUrl}`)
+
     const server = http.createServer((req, res) => {
       if (req.url === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify({ ok: true }))
         return
       }
-      webhookHandler(req, res)
+
+      if (req.method === 'POST' && req.url === WEBHOOK_PATH) {
+        let body = ''
+        req.on('data', chunk => { body += chunk.toString() })
+        req.on('end', () => {
+          try {
+            const update = JSON.parse(body)
+            bot.handleUpdate(update).then(() => {
+              res.writeHead(200)
+              res.end('ok')
+            }).catch(err => {
+              console.error('handleUpdate error:', err)
+              res.writeHead(500)
+              res.end('error')
+            })
+          } catch (err) {
+            console.error('JSON parse error:', err)
+            res.writeHead(400)
+            res.end('bad request')
+          }
+        })
+        return
+      }
+
+      res.writeHead(404)
+      res.end('not found')
     })
+
     server.listen(PORT, () => {
-      console.log(`Bot running on port ${PORT} (webhook: ${WEBHOOK_URL})`)
+      console.log(`Bot server listening on port ${PORT}`)
     })
   }).catch(err => {
-    console.error('Failed to create webhook:', err)
+    console.error('Failed to set webhook:', err)
     process.exit(1)
   })
 } else {
