@@ -23,6 +23,10 @@ export async function announceWinners(battleTitle: string, winners: Array<{
     }
     caption += `\n🔥 Участвуй в следующем батле!`
 
+    const replyMarkup = MINI_APP_URL ? JSON.stringify({
+      inline_keyboard: [[{ text: '🚀 Участвовать в следующем батле!', web_app: { url: MINI_APP_URL } }]]
+    }) : undefined
+
     const firstPhoto = winners.find(w => w.photoUrl)?.photoUrl
     if (firstPhoto) {
       const base64Data = firstPhoto.replace(/^data:image\/\w+;base64,/, '')
@@ -32,6 +36,7 @@ export async function announceWinners(battleTitle: string, winners: Array<{
       formData.append('caption', caption)
       formData.append('parse_mode', 'HTML')
       formData.append('photo', new Blob([photoBuffer], { type: 'image/jpeg' }), 'photo.jpg')
+      if (replyMarkup) formData.append('reply_markup', replyMarkup)
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
         method: 'POST',
         body: formData
@@ -40,7 +45,12 @@ export async function announceWinners(battleTitle: string, winners: Array<{
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: ANNOUNCEMENT_CHANNEL, text: caption, parse_mode: 'HTML' })
+        body: JSON.stringify({
+          chat_id: ANNOUNCEMENT_CHANNEL,
+          text: caption,
+          parse_mode: 'HTML',
+          reply_markup: replyMarkup ? JSON.parse(replyMarkup) : undefined
+        })
       })
     }
   } catch (err) {
