@@ -7,29 +7,16 @@ const MINI_APP_URL = process.env.MINI_APP_URL || 'https://yourdomain.com'
 bot.command('start', async (ctx) => {
   const firstName = ctx.from.first_name
 
-  await ctx.replyWithPhoto(
-    { url: 'https://i.imgur.com/placeholder.jpg' },
+  await ctx.reply(
+    `🔥 *ФотоБатл* — соревнуйся и выигрывай!\n\nПривет, ${firstName}! 👋\n\n📸 Загружай фото в баттл\n❤️ Голосуй за других\n⭐ Выигрывай монеты и призы`,
     {
-      caption: `🔥 *ФотоБатл* — соревнуйся и выигрывай!\n\nПривет, ${firstName}!\n\n📸 Загружай фото\n❤️ Голосуй за других\n⭐ Выигрывай монеты\n\nСтарт — внутри!`,
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
         [Markup.button.webApp('🚀 Открыть ФотоБатл', MINI_APP_URL)],
-        [Markup.button.url('🔗 Открыть через браузер', 'https://t.me/photobattletgbot/PhotoBattle')],
+        [Markup.button.url('🔗 Открыть ФотоБатл', 'https://t.me/photobattletgbot/PhotoBattle')],
         [Markup.button.callback('❓ Как это работает?', 'how_it_works')]
       ])
     }
-  ).catch(() =>
-    ctx.reply(
-      `🔥 *ФотоБатл* — соревнуйся и выигрывай!\n\nПривет, ${firstName}!\n\n📸 Загружай фото\n❤️ Голосуй за других\n⭐ Выигрывай монеты`,
-      {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-          [Markup.button.webApp('🚀 Открыть ФотоБатл', MINI_APP_URL)],
-          [Markup.button.url('🔗 Открыть через браузер', 'https://t.me/photobattletgbot/PhotoBattle')],
-          [Markup.button.callback('❓ Как это работает?', 'how_it_works')]
-        ])
-      }
-    )
   )
 
   // Send starter pack invoice
