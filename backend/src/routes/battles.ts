@@ -108,7 +108,7 @@ router.get('/:id/vote-entry', async (req: AuthRequest, res: Response) => {
     },
     include: {
       user: {
-        select: { id: true, username: true, firstName: true, avatarUrl: true }
+        select: { id: true, username: true, firstName: true, avatarUrl: true, allowMessages: true }
       }
     },
     orderBy: { createdAt: 'asc' }

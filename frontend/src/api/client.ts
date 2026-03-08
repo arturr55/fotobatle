@@ -49,7 +49,7 @@ export interface BattleEntry {
   rank: number | null
   prize: number | null
   createdAt: string
-  user?: { id: number; username: string | null; firstName: string; avatarUrl: string | null }
+  user?: { id: number; username: string | null; firstName: string; avatarUrl: string | null; allowMessages?: boolean }
 }
 
 export interface User {
@@ -63,6 +63,7 @@ export interface User {
   totalWins: number
   totalEarned: number
   isAdmin: boolean
+  allowMessages: boolean
 }
 
 export interface Transaction {

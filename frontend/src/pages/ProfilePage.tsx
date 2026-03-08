@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUser } from '../hooks/useUser'
 import api, { mediaUrl } from '../api/client'
 import type { Transaction, WithdrawalRequest } from '../api/client'
-import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle, Users, Camera, Megaphone, X, ExternalLink } from 'lucide-react'
+import { Star, Trophy, Wallet, ArrowDownCircle, Clock, PlusCircle, Users, Camera, Megaphone, X, ExternalLink, MessageCircle } from 'lucide-react'
 import WebApp from '@twa-dev/sdk'
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react'
 
@@ -84,6 +84,12 @@ export default function ProfilePage() {
       WebApp.showAlert(user?.isAdmin ? 'Канал добавлен и сразу активирован!' : 'Заявка отправлена на модерацию! Мы уведомим вас о решении.')
     },
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка'),
+  })
+
+  const toggleMessages = useMutation({
+    mutationFn: (allowMessages: boolean) =>
+      api.patch('/users/me/settings', { allowMessages }).then(r => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['user'] }),
   })
 
   const confirmPayment = useMutation({
@@ -469,6 +475,36 @@ export default function ProfilePage() {
             <Users size={15} />
             Поделиться реферальной ссылкой
           </button>
+        </div>
+
+        {/* Allow messages toggle */}
+        <div className="rounded-2xl p-4" style={{ background: CARD, border: '1px solid rgba(26,22,42,0.08)' }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: user.allowMessages ? 'rgba(0,152,234,0.15)' : 'rgba(26,22,42,0.07)' }}>
+                <MessageCircle size={16} style={{ color: user.allowMessages ? '#0098EA' : 'rgba(26,22,42,0.35)' }} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: DARK }}>Открыт для общения</p>
+                <p className="text-xs" style={{ color: 'rgba(26,22,42,0.45)' }}>
+                  {user.allowMessages ? 'Другие могут написать тебе' : 'Только ты видишь своё фото'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => toggleMessages.mutate(!user.allowMessages)}
+              disabled={toggleMessages.isPending}
+              className="relative flex-shrink-0"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              <div className="w-12 h-6 rounded-full transition-all duration-300"
+                style={{ background: user.allowMessages ? '#0098EA' : 'rgba(26,22,42,0.18)' }}>
+                <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300"
+                  style={{ left: user.allowMessages ? '26px' : '2px' }} />
+              </div>
+            </button>
+          </div>
         </div>
 
         {/* Battle history */}

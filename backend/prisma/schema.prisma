@@ -19,6 +19,7 @@ model User {
   totalEarned Int      @default(0)
   bonusVotes    Int      @default(0)
   streakDays    Int      @default(0)
+  allowMessages Boolean  @default(false)
   lastEntryDate DateTime?
   achievements  Json     @default("[]")
   createdAt   DateTime @default(now())

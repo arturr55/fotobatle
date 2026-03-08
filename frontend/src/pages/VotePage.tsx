@@ -175,19 +175,35 @@ function VoteCard({ battleId, bonusVotes }: { battleId: number; bonusVotes: numb
           >
             <div className="mb-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-white font-extrabold text-2xl leading-tight">
-                  {entry.user?.firstName || 'Участник'}
-                </h2>
-                {bonusVotes > 0 && (
-                  <span className="text-xs px-2 py-1 rounded-full font-semibold"
-                    style={{ background: 'rgba(254,123,17,0.25)', color: '#fe7b11' }}>
-                    🎯 {bonusVotes} бонус
-                  </span>
-                )}
+                <div>
+                  <h2 className="text-white font-extrabold text-2xl leading-tight">
+                    {entry.user?.firstName || 'Участник'}
+                  </h2>
+                  {entry.user?.username && (
+                    <p className="text-white/40 text-sm">@{entry.user.username}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {bonusVotes > 0 && (
+                    <span className="text-xs px-2 py-1 rounded-full font-semibold"
+                      style={{ background: 'rgba(254,123,17,0.25)', color: '#fe7b11' }}>
+                      🎯 {bonusVotes} бонус
+                    </span>
+                  )}
+                  {entry.user?.allowMessages && entry.user?.username && (
+                    <a
+                      href={`https://t.me/${entry.user.username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold no-underline"
+                      style={{ background: 'rgba(0,152,234,0.25)', color: '#0098EA', border: '1px solid rgba(0,152,234,0.4)' }}
+                    >
+                      ✉️ Написать
+                    </a>
+                  )}
+                </div>
               </div>
-              {entry.user?.username && (
-                <p className="text-white/40 text-sm">@{entry.user.username}</p>
-              )}
               <p className="text-white/30 text-xs mt-1">
                 {bonusUsed ? '✨ Бонусный голос использован!' : '← пропустить · свайп вправо = 🔥 →'}
               </p>

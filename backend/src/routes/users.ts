@@ -20,11 +20,23 @@ router.get('/me', async (req: AuthRequest, res: Response) => {
       totalWins: true,
       totalEarned: true,
       bonusVotes: true,
+      allowMessages: true,
       createdAt: true,
       _count: { select: { referrals: true } }
     }
   })
   res.json({ ...user, telegramId: user?.telegramId?.toString(), isAdmin: req.user!.isAdmin, referralCount: user?._count?.referrals ?? 0 })
+})
+
+router.patch('/me/settings', async (req: AuthRequest, res: Response) => {
+  const { allowMessages } = req.body
+  if (typeof allowMessages !== 'boolean') return res.status(400).json({ error: 'Invalid' })
+  const user = await prisma.user.update({
+    where: { id: req.user!.id },
+    data: { allowMessages },
+    select: { allowMessages: true }
+  })
+  res.json(user)
 })
 
 // Claim referral bonus (called when new user opens app via referral link)
