@@ -232,8 +232,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
           </p>
           <p className="text-xs mb-3" style={{ color: 'rgba(26,22,42,0.6)' }}>
             Для участия нужно подписаться на канал{' '}
-            <b>@{(battle as any).requiredChannel.channelUsername}</b>{' '}
-            ({(battle as any).requiredChannel.subscribedCount}/{(battle as any).requiredChannel.targetSubscribers} подписчиков)
+            <b>@{(battle as any).requiredChannel.channelUsername}</b>
           </p>
           <button
             onClick={() => WebApp.openTelegramLink(`https://t.me/${(battle as any).requiredChannel.channelUsername}`)}
