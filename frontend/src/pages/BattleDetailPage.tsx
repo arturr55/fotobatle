@@ -257,7 +257,7 @@ export default function BattleDetailPage({ battleId, onBack }: Props) {
             </p>
           )}
 
-          <input ref={fileRef} type="file" accept="image/*" capture="user"
+          <input ref={fileRef} type="file" accept="image/*"
             onChange={handleFileChange} className="hidden" />
 
           {preview ? (
