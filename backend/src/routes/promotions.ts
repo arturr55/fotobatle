@@ -36,8 +36,9 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'channelUsername and targetSubscribers (min 10) required' })
   }
 
+  const isAdmin = req.user!.isAdmin
   const pricePerSub = await getPricePerSub()
-  const budgetTon = pricePerSub * targetSubscribers
+  const budgetTon = isAdmin ? 0 : pricePerSub * targetSubscribers
 
   const promotion = await prisma.channelPromotion.create({
     data: {
@@ -45,6 +46,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       channelUsername: channelUsername.replace('@', ''),
       targetSubscribers: parseInt(targetSubscribers),
       budgetTon,
+      status: isAdmin ? 'ACTIVE' : 'PENDING_REVIEW',
     }
   })
   res.json(promotion)

@@ -81,7 +81,7 @@ export default function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ['my-promotions'] })
       setPromoForm({ channelUsername: '', targetSubscribers: 100 })
       setShowBuyPanel(false)
-      WebApp.showAlert('Заявка отправлена на модерацию! Мы уведомим вас о решении.')
+      WebApp.showAlert(user?.isAdmin ? 'Канал добавлен и сразу активирован!' : 'Заявка отправлена на модерацию! Мы уведомим вас о решении.')
     },
     onError: (err: any) => WebApp.showAlert(err.response?.data?.error || 'Ошибка'),
   })
@@ -389,7 +389,7 @@ export default function ProfilePage() {
               className="w-full py-3 rounded-xl text-sm font-bold text-white disabled:opacity-40"
               style={{ background: '#0098EA', border: 'none', cursor: 'pointer' }}
             >
-              {createPromotion.isPending ? 'Отправляем...' : 'Отправить на модерацию'}
+              {createPromotion.isPending ? 'Отправляем...' : user?.isAdmin ? 'Добавить бесплатно' : 'Отправить на модерацию'}
             </button>
           </div>
         )}
