@@ -1,6 +1,7 @@
 import { Router, Response, Request } from 'express'
 import { authMiddleware, adminOnly, AuthRequest } from '../middleware/auth'
 import prisma from '../db'
+import { sendNotification } from '../services/notifyService'
 
 const router = Router()
 
@@ -140,6 +141,11 @@ router.patch('/admin/withdrawals/:id', adminOnly, async (req: AuthRequest, res: 
   if (!withdrawal) return res.status(404).json({ error: 'Not found' })
   if (withdrawal.status !== 'PENDING') return res.status(400).json({ error: 'Already processed' })
 
+  const user = await prisma.user.findUnique({
+    where: { id: withdrawal.userId },
+    select: { telegramId: true }
+  })
+
   if (status === 'REJECTED') {
     await prisma.$transaction([
       prisma.withdrawalRequest.update({
@@ -160,11 +166,19 @@ router.patch('/admin/withdrawals/:id', adminOnly, async (req: AuthRequest, res: 
         }
       })
     ])
+    if (user) {
+      await sendNotification(user.telegramId,
+        `❌ <b>Заявка на вывод отклонена</b>\n\n${withdrawal.amount} BS⭐ возвращены на твой баланс.${adminNote ? `\n\nПричина: ${adminNote}` : ''}`)
+    }
   } else {
     await prisma.withdrawalRequest.update({
       where: { id },
       data: { status, adminNote, processedAt: new Date() }
     })
+    if (user) {
+      await sendNotification(user.telegramId,
+        `✅ <b>Вывод выполнен!</b>\n\n${withdrawal.amount} BS⭐ отправлены тебе в Telegram Stars. Проверь уведомления от Telegram.`)
+    }
   }
 
   res.json({ success: true })
