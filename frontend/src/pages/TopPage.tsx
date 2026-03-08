@@ -141,7 +141,7 @@ export default function TopPage() {
   const [tab, setTab] = useState<'live' | 'winners'>('live')
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
-  const allBattles = battles || []
+  const allBattles = (battles || []).slice().sort((a, b) => (b._count?.entries ?? 0) - (a._count?.entries ?? 0))
   const current = selectedId ? allBattles.find(b => b.id === selectedId) : allBattles[0]
 
   return (
