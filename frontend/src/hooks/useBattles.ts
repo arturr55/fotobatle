@@ -57,7 +57,7 @@ function compressImage(file: File, username: string, maxWidth = 1200, quality = 
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
       // Watermark
-      const text = `@${username} · ФотоБатл`
+      const text = `@${username} · ФотоБаттл`
       const fontSize = Math.max(16, Math.round(canvas.width * 0.035))
       ctx.font = `bold ${fontSize}px Arial`
       const padding = fontSize * 0.6

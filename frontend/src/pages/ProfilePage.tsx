@@ -374,7 +374,7 @@ export default function ProfilePage() {
             )}
 
             <a
-              href={`https://t.me/${import.meta.env.VITE_BOT_USERNAME || 'photobatletgBot'}?start=addtochannel`}
+              href={`https://t.me/${import.meta.env.VITE_BOT_USERNAME || 'photobattletgbot'}?start=addtochannel`}
               target="_blank" rel="noopener noreferrer"
               className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 no-underline"
               style={{ background: 'rgba(26,22,42,0.06)', color: 'rgba(26,22,42,0.6)', border: '1px dashed rgba(26,22,42,0.2)' }}
@@ -458,9 +458,9 @@ export default function ProfilePage() {
           </div>
           <button
             onClick={() => {
-              const botUsername = import.meta.env.VITE_BOT_USERNAME || 'photobatletgBot'
-              const link = `https://t.me/${botUsername}/PhotoBatle?startapp=ref${user.id}`
-              const text = `Присоединяйся к ФотоБатл — соревнуйся за фото и выигрывай монеты! 📸🔥`
+              const botUsername = import.meta.env.VITE_BOT_USERNAME || 'photobattletgbot'
+              const link = `https://t.me/${botUsername}/PhotoBattle?startapp=ref${user.id}`
+              const text = `Присоединяйся к ФотоБаттл — соревнуйся за фото и выигрывай монеты! 📸🔥`
               WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`)
             }}
             className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"

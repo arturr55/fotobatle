@@ -28,7 +28,7 @@ export default function BattlesPage({ onSelectBattle }: Props) {
           <div>
             <h1 style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 1.05 }}>
               <span className="text-white" style={{ fontSize: '2.6rem' }}>Фото </span>
-              <span style={{ fontSize: '2.6rem', color: '#fe7b11' }}>Батл</span>
+              <span style={{ fontSize: '2.6rem', color: '#fe7b11' }}>Баттл</span>
             </h1>
             <p className="text-white/50 text-sm">Соревнуйся и выигрывай звёзды</p>
           </div>
