@@ -96,7 +96,6 @@ function VoteCard({ battleId, bonusVotes }: { battleId: number; bonusVotes: numb
         animate={controls}
         exit={{ opacity: 0, scale: 0.94 }}
         transition={{ duration: 0.25 }}
-        style={{ x, rotate }}
         drag="x"
         dragElastic={0.6}
         dragConstraints={{ left: 0, right: 0 }}
